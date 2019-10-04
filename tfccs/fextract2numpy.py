@@ -1,9 +1,12 @@
 """
-python fextract2numpy.py /home/UNIXHOME/yli/for_the_people/zdz/chunk-0.fextract.v3.csv
+python fextract2numpy.py /home/UNIXHOME/yli/for_the_people/zdz/chunk-0.fextract.v3.csv output
 
 Convert each row of fextract.csv to features to use in NN training.
 1) Exclude NO_TRAIN_FEATURES, and DUPLICATED_FEATURES
 2) One-hot encode each CCSBase from ACGT to 1000, 0100, 0010, 0001
+
+Compression rate: 10 fold, 700MB fextract.csv --> 70MB npz
+Runtime: 2 minutes
 """
 import datetime
 import numpy as np
@@ -116,7 +119,7 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     print("Created header file {}, time={}.".format(out_header_filename, t2-t1))
 
     def zipsave(out_filename, start_row, end_row):
-        np.savez_compressed(out_train_filename,
+        np.savez_compressed(out_filename,
                             fextractinput=npa[start_row:end_row],
                             arrowqv=arrow_qvs[start_row:end_row],
                             arrowqvbin8=arrow_qv_bins[start_row:end_row])

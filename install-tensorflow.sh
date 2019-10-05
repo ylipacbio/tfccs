@@ -43,8 +43,16 @@ python -c 'import tensorflow as tf; print(tf.__version__)'
 # 2.0.0
 
 echo "install useful py packages"
-pip install pylint autopep8 pytest ipython jupyterlab
+pip install pylint autopep8 pytest ipython jupyterlab 
+echo "install tools for data manipulation"
+pip install seaborn pandas
+
+echo "install tools for keras model visualization"
+pip install pydot=1.2.3 matplotlib
+# Note pydot 1.2.4 has a bug which is not compatible with tf 2.0
+brew install graphvis
 
 echo "Launch jupyter notebook"
 juypter notebook&
+
 }

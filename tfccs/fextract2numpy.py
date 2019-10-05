@@ -83,7 +83,7 @@ def is_good_fextract_row(in_d, forward_only_ccs=True):
     return dist2end > 100 and (not forward_only_ccs or strand == 'F')
 
 
-def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_only_ccs):
+def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_only_ccs, no_dump_remaining):
     reader = csv.DictReader(open(fextract_filename, 'r'), delimiter=',')
     dataset = []
     arrow_qvs = []
@@ -96,11 +96,13 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
         out_r, arrow_qv = convert_fextract_row(r)
         if idx == 0:
             features = out_r.keys()
+        if no_dump_remaining and idx >= num_train_rows:
+            break
         new_r = np.fromiter(out_r.values(), dtype=np.float32)
         dataset.append(new_r)
         arrow_qvs.append(arrow_qv)
         if idx % 500000 == 0:
-            print ("Processing {} rows".format(idx))
+            print("Processing {} rows".format(idx))
         idx += 1
     if len(dataset) == 0:
         raise ValueError("Output empty train data!")
@@ -128,17 +130,16 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     out_test_filename = output_prefix + ".test.npz"
     zipsave(out_train_filename, 0, num_train_rows)
     t3 = datetime.datetime.now()
-    print ("Dumped {} rows of training data, time={}".format(num_train_rows, t3-t2))
-    if len(dataset) > num_train_rows:
+    print("Dumped {} rows of training data, time={}".format(num_train_rows, t3-t2))
+    if len(dataset) > num_train_rows and not no_dump_remaining:
         zipsave(out_test_filename, num_train_rows, len(dataset))
         t4 = datetime.datetime.now()
-        print ("Dumped {} rows of test data, time={} ".format(len(dataset) - num_train_rows, t4-t3))
-    else:
-        raise ValueError("Output empty test data!")
+        print("Dumped {} rows of test data, time={} ".format(len(dataset) - num_train_rows, t4-t3))
 
 
 def run(args):
-    fextract2numpy(args.fextract_filename, args.output_prefix, args.num_train_rows, not args.both_strands)
+    fextract2numpy(args.fextract_filename, args.output_prefix, args.num_train_rows,
+                   not args.both_strands, args.no_dump_remaining)
     return 0
 
 
@@ -151,9 +152,12 @@ def get_parser():
     p.add_argument("fextract_filename", help="fextract csv file")
     p.add_argument("output_prefix", help="Output prefix")
     p.add_argument("--num-train-rows", type=int, default=1000000, help="Number of training rows")
-    p.add_argument("--both-strands",
+    p.add_argument("--no-dump-remaining", default=False,
+                   help="Do not dump remaining rows other than training",
+                   action="store_true")
+    p.add_argument("--both-strands", default=False,
                    help="Default=False, only use CCS forward mapped to genome, otherwise use both stranded CCS",
-                   action="store_false")
+                   action="store_true")
     return p
 
 

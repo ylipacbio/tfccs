@@ -1,9 +1,18 @@
-Data, model, train, test
+## To compute mean/stdev/min/max of fextract.csv file:
+```
+fextract2stat input.fextract.csv fextract.stat.json
+```
 
+## To standardize input fextract.csv and save as numpy compressed model:
 ```
-nohup python3 tfccs/train.py \
-tests/data/zip1.class \
-tests/data/zip1.input.fofn \
-tests/data/zip1.VAL.input.fofn \
-> train_zip128-64-64.output &
+fextract2numpy input.fextract.csv output --standardize fextract.stat.json
 ```
+
+## To train a simple NN model:
+TBD
+
+## To train a simple linear model: 
+TBD
+
+## To train a simple multiple-normial model:
+TBD

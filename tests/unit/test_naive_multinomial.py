@@ -18,10 +18,10 @@ def test_naive_multinomial():
     """
     out_dir = op.join(op.dirname(op.dirname(__file__)), 'out', 'naive_multinomial')
     x_train = np.fromiter(range(1000), dtype=np.float32) / 1000.  # 0, 0.001, ..., 0.999
-    y_train = np.asarray([tf.one_hot(0, 3)] * 300 + [tf.one_hot(1, 3)] * 300 + [tf.one_hot(1, 3)] * 400).reshape(1000, 3)
-    model, evl = train(x_train, y_train, out_dir, 'naive_multinomial', epochs=100)
-    pred = model.evaluate([0.2, 0.5, 0.7], [[1,0,0], [0, 1, 0], [0, 0, 1]])
-    assert pred == 1.0
+    y_train = np.asarray([1,0,0] * 300 + [0,1,0] * 300 + [0,0,1] * 400).reshape(1000, 3)
+    model, evl = train(x_train, y_train, out_dir, 'naive_multinomial', epochs=300)
+    pred = model.evaluate([0.02, 0.5, 0.8], [[1,0,0], [0, 1, 0], [0, 0, 1]])
+    assert pred[1] == 1.0
 
 
 #test_naive_multinomial()

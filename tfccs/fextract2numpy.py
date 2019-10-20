@@ -105,8 +105,6 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     idx = 0
     out_features = None
     t0 = datetime.datetime.now()
-    import pdb
-    pdb.set_trace()
     for r in reader:
         if not is_good_fextract_row(r, forward_only_ccs=forward_only_ccs):
             continue

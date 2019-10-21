@@ -39,4 +39,11 @@ cp -r bazel-tensorflow/external/eigen_archive/unsupported/  ${include_dir}
 cp -r bazel-tensorflow/external/eigen_archive/Eigen/  ${include_dir}
 cp -r tensorflow/lite/tools/make/downloads/absl/absl ${include_dir}
 
-echo "To test if libtensorflow, libtensorflow_cc and libtensorflow_framework are installed correctly, call test_tensorflow.sh"
+echo "Important!! Must copy headers of protobuf library to ${include_dir} as well, and protobuf must be compatible with tensorflow 2.0"
+echo "I could not find protobuf version which binds with tensorflow 2.0 from document, and thus had to search bazel cache directory
+and looked for google/protobuf."
+cp -r /home/UNIXHOME/yli/.cache/bazel/_bazel_yli/0fbad4acc88b4aae722abcc20de9f391/external/com_google_protobuf/src/google ${include_dir}/
+
+echo """To test libtensorflow_cc and libtensorflow_framework are installed correctly, call
+bash test_libtensorflow_cc.sh
+"""

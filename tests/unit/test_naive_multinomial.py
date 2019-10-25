@@ -19,9 +19,10 @@ def test_naive_multinomial():
     out_dir = op.join(op.dirname(op.dirname(__file__)), 'out', 'naive_multinomial')
     x_train = np.fromiter(range(1000), dtype=np.float32) / 1000.  # 0, 0.001, ..., 0.999
     y_train = np.asarray([1,0,0] * 300 + [0,1,0] * 300 + [0,0,1] * 400).reshape(1000, 3)
-    model, evl = train(x_train, y_train, out_dir, 'naive_multinomial', epochs=300)
+    model, evl = train(x_train, y_train, out_dir, 'naive_multinomial', epochs=200)
     pred = model.evaluate([0.02, 0.5, 0.8], [[1,0,0], [0, 1, 0], [0, 0, 1]])
     assert pred[1] == 1.0
-
-
-#test_naive_multinomial()
+    # save_dir = '/pbi/dept/secondary/siv/yli/jira/tak-97/naive-multinomial/'
+    # new_model = tf.keras.models.load_model(save_dir)
+    # new_pred = new_model.evaluate([0.02, 0.5, 0.8], [[1,0,0], [0, 1, 0], [0, 0, 1]])
+    # assert pred == new_pred

@@ -4,7 +4,6 @@ import sys
 import os
 import os.path as op
 from tfccs.utils import load_fextract_npz
-from tensorflow.keras.utils import plot_model, model_to_dot
 
 
 def train(x_train, y_train, out_dir, name="multinomial", epochs=500):
@@ -34,10 +33,10 @@ def train(x_train, y_train, out_dir, name="multinomial", epochs=500):
     print(summary)
     model_png = op.join(out_dir, '{}.model.png'.format(name))
     checkpoint_file = op.join(out_dir, "{}.ckpt".format(name))
-    plot_model(model, to_file=model_png)
+    tf.keras.utils.plot_model(model, to_file=model_png)
 
     # Fit and call back
-    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=op.join(out_dir, 'best_model.h5'), verbose=1)
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
     model.fit(x_train, y_train, epochs=epochs, callbacks=[cp_callback])
 
     # Evaluate

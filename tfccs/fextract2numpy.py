@@ -48,12 +48,19 @@ def one_hot_base(base):
             "CCSBaseT": 1 if base in 'Tt' else 0}
 
 
-def one_hot_cigar(cigar):
+def one_hot_encode_cigar(cigar):
     assert cigar in '=IDX'
     return [1 if cigar == '=' else 0,
             1 if cigar == 'I' else 0,
             1 if cigar == 'X' else 0,
             1 if cigar == 'D' else 0]
+
+
+def one_hot_to_cigar(one_hot):
+    assert len(one_hot) == 4
+    idx = np.argmax(one_hot)
+    d = {0: '=', 1: 'I', 2: 'X', 3: 'D'}
+    return d[idx]
 
 
 def ccs2genome_cigar_counting_prev_dels(current_cigar, num_prev_deletions):
@@ -64,9 +71,9 @@ def ccs2genome_cigar_counting_prev_dels(current_cigar, num_prev_deletions):
     """
     num_prev_deletions = int(num_prev_deletions)
     if num_prev_deletions == 0:
-        return one_hot_cigar('D')
+        return one_hot_encode_cigar('D')
     assert current_cigar in '=IX'
-    return one_hot_cigar(current_cigar)
+    return one_hot_encode_cigar(current_cigar)
 
 
 def convert_fextract_row(input_d):

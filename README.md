@@ -8,11 +8,5 @@ fextract2stat input.fextract.csv fextract.stat.json
 fextract2numpy input.fextract.csv output --standardize fextract.stat.json
 ```
 
-## To train a simple NN model:
-TBD
-
-## To train a simple linear model: 
-TBD
-
-## To train a simple multiple-normial model:
-TBD
+## Train a simple multiple-normial model:
+bash train_hist/lambda-multi-ccs2genome.sh

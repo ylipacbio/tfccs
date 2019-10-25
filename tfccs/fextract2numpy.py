@@ -94,6 +94,8 @@ def convert_fextract_row(input_d):
 
 def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_only_ccs, no_dump_remaining, stat_json):
     reader = csv.DictReader(open(fextract_filename, 'r'), delimiter=',')
+    raw_reader = open(fextract_filename, 'r')
+    header = next(raw_reader)  # Skip header
     features = reader.fieldnames
 
     # If fextract.stat.json was provided as input, check features in csv and stat.json MATCH
@@ -112,7 +114,11 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     idx = 0
     out_features = None
     t0 = datetime.datetime.now()
-    for r in reader:
+    raw_train_writer = open(output_prefix + '.train.fextract.csv', 'w')
+    raw_train_writer.write(header)
+    raw_test_writer = open(output_prefix + '.test.fextract.csv', 'w')
+    raw_test_writer.write(header)
+    for r, raw_r in zip(reader, raw_reader):
         if not is_good_fextract_row(r, forward_only_ccs=forward_only_ccs):
             continue
         out_r, arrow_qv, ccs2genome_cigar = convert_fextract_row(r)
@@ -121,8 +127,12 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
         else:
             if out_features != list(out_r.keys()):
                 raise ValueError("Could not convert row {} to consistent output features!".format(r[0:50]))
-        if no_dump_remaining and idx >= num_train_rows:
+        if idx < num_train_rows:
+            raw_train_writer.write(raw_r)
+        elif no_dump_remaining:
             break
+        else:
+            raw_test_writer.write(raw_r)
         new_r = np.fromiter(out_r.values(), dtype=np.float32)
         dataset.append(new_r)
         arrow_qvs.append(arrow_qv)
@@ -130,6 +140,9 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
         if idx % 500000 == 0:
             print("Processing {} rows".format(idx))
         idx += 1
+    raw_train_writer.close()
+    raw_test_writer.close()
+
     if len(dataset) == 0:
         raise ValueError("Output empty train data!")
     t1 = datetime.datetime.now()

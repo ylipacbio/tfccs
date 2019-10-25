@@ -4,9 +4,10 @@ import sys
 import os
 import os.path as op
 from tfccs.utils import load_fextract_npz
+import argparse
 
 
-def train(x_train, y_train, out_dir, name="multinomial", epochs=500):
+def train(x_train, y_train, out_dir, name="multinomial", batch_size=32, epochs=500):
     """
     x_train - normalized standardized features
     y_train - outputs
@@ -37,7 +38,7 @@ def train(x_train, y_train, out_dir, name="multinomial", epochs=500):
 
     # Fit and call back
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
-    model.fit(x_train, y_train, epochs=epochs, callbacks=[cp_callback])
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=[cp_callback])
 
     # Evaluate
     evl = model.evaluate(x_train, y_train)
@@ -46,13 +47,33 @@ def train(x_train, y_train, out_dir, name="multinomial", epochs=500):
     return model, evl
 
 
-def multinomial_ccs2genome():
-    test_npz_filename = "/pbi/dept/secondary/siv/yli/jira/tak-59/multi-ccs2genome/chunk-0.train.npz"
-    fextract_input, _, _, ccs2genome_cigars, nrow, ncol = \
-        load_fextract_npz(test_npz_filename)
-    out_dir = 'multinomial-1M'
-    train(fextract_input, ccs2genome_cigars, out_dir, 'lambda', epochs=1000)
+def multinomial_ccs2genome(in_npz, out_dir, name, batch_size, epochs):
+    fextract_input, _, _, ccs2genome_cigars, nrow, ncol = load_fextract_npz(in_npz)
+    train(fextract_input, ccs2genome_cigars, out_dir=out_dir, name=name, batch_size=batch_size, epochs=epochs)
+
+
+def run(args):
+    multinomial_ccs2genome(in_npz=args.in_fextract_npz, out_dir=args.out_dir,
+                           name=args.name, batch_size=args.batch_size, epochs=args.epochs)
+    return 0
+
+
+def get_parser():
+    """Set up and return argument parser."""
+    desc = """Train a multinomial model"""
+    p = argparse.ArgumentParser(desc)
+    p.add_argument("in_fextract_npz", help="Input fextract standarized npz file")
+    p.add_argument("out_dir", help="Output directory for saving model.")
+    p.add_argument("--name", help="Model name.")
+    p.add_argument("--batch-size", default=32, type=int, help="Batch size")
+    p.add_argument("--epochs", default=500, type=int, help="Epochs")
+    return p
+
+
+def main(args=sys.argv[1:]):
+    """main"""
+    run(get_parser().parse_args(args))
 
 
 if __name__ == "__main__":
-    multinomial_ccs2genome()
+    sys.exit(main(args=sys.argv[1:]))

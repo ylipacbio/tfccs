@@ -25,7 +25,9 @@ setup(
     # Maybe the pbtools-* should really be done in a subparser style
     entry_points={'console_scripts': [
         'fextract2numpy=tfccs.fextract2numpy:main',
-        'fextract2stat=tfccs.fextract2stat:main'
+        'fextract2stat=tfccs.fextract2stat:main',
+        'multinomial=tfccs.multinomial:main',
+        'evalmodel=tfccs.evalmodel:main',
     ]},
     install_requires=[],
     tests_require=['pytest'],

@@ -11,7 +11,7 @@ import argparse
 import csv
 import json
 import sys
-from tfccs.constants import NO_TRAIN_FEATURES
+from tfccs.constants import NO_TRAIN_FEATURES, BASE_FEATURE_STAT_KEY
 from tfccs.utils import is_good_fextract_row
 
 
@@ -35,19 +35,32 @@ def compute_feature_stats(in_csv, out_json, forward_only_ccs):
     npa = np.asarray(dataset, dtype=np.float32)
     t2 = datetime.datetime.now()
     print("Created np array time={}.".format(t2-t1))
-
     n = len(features)
     mean_features = np.mean(npa, axis=0)
     stdev_features = np.std(npa, axis=0)
     min_features = np.min(npa, axis=0)
     max_features = np.max(npa, axis=0)
-    d = {'mean': {features[idx]: float(mean_features[idx]) for idx in range(n)},
-         'stdev': {features[idx]: float(stdev_features[idx]) for idx in range(n)},
-         'min': {features[idx]: float(min_features[idx]) for idx in range(n)},
-         'max': {features[idx]: float(max_features[idx]) for idx in range(n)}}
+
+    def save_format_1():
+        ret = {'mean': {features[idx]: float(mean_features[idx]) for idx in range(n)},
+               'stdev': {features[idx]: float(stdev_features[idx]) for idx in range(n)},
+               'min': {features[idx]: float(min_features[idx]) for idx in range(n)},
+               'max': {features[idx]: float(max_features[idx]) for idx in range(n)}}
+        return ret
+
+    def save_format_2():
+        # Save as {featureName: {"name":name, "mean":mean , "stdev": stdev, "min": min, "max": max}}
+        ret = []
+        for idx in range(0, n):
+            d = {"name": features[idx], "mean": float(mean_features[idx]),
+                 "stdev": float(stdev_features[idx]), "min": float(min_features[idx]),
+                 "max": float(max_features[idx])}
+            ret.append(d)
+        return {BASE_FEATURE_STAT_KEY: ret}
+
     print("Dump mean, stdev, min, max of trainable variables to {}.".format(out_json))
     with open(out_json, 'w') as writer:
-        json.dump(d, writer, indent=4, sort_keys=True)
+        json.dump(save_format_2(), writer, indent=4, sort_keys=True)
 
 
 def run(args):

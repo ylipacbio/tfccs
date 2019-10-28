@@ -73,7 +73,7 @@ def get_parser():
     p.add_argument("in_model_dir", help="Input tensorflow model directory.")
     p.add_argument("in_fextract_npz", help="Input fextract.npz file for test")
     p.add_argument("in_fextract_csv", help="Input fextract.csv file which must match input fextract.npz")
-    p.add_argument("out_csv", help="Output csv the same as input_fextract_csv with an additional column PredictedBaseQv")
+    p.add_argument("out_csv", help="Output csv the same as input_fextract_csv with an additional column PredictedCigar")
     return p
 
 

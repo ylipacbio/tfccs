@@ -1,18 +1,6 @@
 {
-    "mean": {
-        "F1": 1,
-        "F2": 2
-    },
-    "stdev": {
-        "F1": 3,
-        "F2": 4
-    },
-    "min": {
-        "F1": 5,
-        "F2": 4
-    },
-    "max": {
-        "F1": 6,
-        "F2": 8
-    }
+    "BaseFeatureStat": [
+        {"name":"F1", "mean":1, "stdev": 3, "min":5, "max":6},
+        {"name":"F2", "mean":2, "stdev": 4, "min":4, "max":8}
+    ]
 }

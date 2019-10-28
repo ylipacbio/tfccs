@@ -1,10 +1,10 @@
-from tfccs.utils import load_fextract_stat_json
+from tfccs.utils import load_fextract_stat_json_2
 import os.path as op
 
 ROOT_DIR = op.dirname(op.dirname(__file__))
 
 def test_load_fextract_stat_json():
-    d, features = load_fextract_stat_json(op.join(ROOT_DIR, 'data', 'fextract.stat.json'))
+    d, features = load_fextract_stat_json_2(op.join(ROOT_DIR, 'data', 'fextract.stat.json'))
 
     expected_mean = {'F1': 1.0 , 'F2':2.0}
     expected_stdev = {'F1': 3.0 , 'F2':4.0}

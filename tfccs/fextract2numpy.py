@@ -14,8 +14,9 @@ import timeit
 import argparse
 import csv
 import sys
-from tfccs.constants import NO_TRAIN_FEATURES
-from tfccs.utils import load_fextract_stat_json, is_good_fextract_row, cap_outlier_standardize
+import json
+from tfccs.constants import NO_TRAIN_FEATURES, ORDERED_FEATURES_KEY
+from tfccs.utils import load_fextract_stat_json_2, is_good_fextract_row, cap_outlier_standardize
 
 
 DUPLICATED_FEATURES = ["CCSBaseSNR"]  # duplication of SNR_A/SNR_C/SNR_G/SNR_T
@@ -101,7 +102,7 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     # If fextract.stat.json was provided as input, check features in csv and stat.json MATCH
     stat_d, stat_features = None, None
     if stat_json is not None:
-        stat_d, stat_features = load_fextract_stat_json(stat_json)
+        stat_d, stat_features = load_fextract_stat_json_2(stat_json)
         trainable_features = set(features).difference(set(NO_TRAIN_FEATURES + ['CCSBase']))
         if trainable_features != stat_features:
             raise ValueError("Features in csv and stat.json differ!\n" +
@@ -170,11 +171,16 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
             npat[idx] = tmp
         npa = npat.T  # npa 2d array, row: CCS bases, column: out_features
 
-    # Write header
+    # Write output header as txt
     out_header_filename = output_prefix + ".train.header"
     with open(out_header_filename, 'w') as writer:
         writer.write(','.join(out_features))
-    print("Created header file {}, time={}.".format(out_header_filename, t2-t1))
+
+    # Write ordered output features as json
+    out_ordered_features_json_filename = output_prefix + ".ordered_features.json"
+    with open(out_ordered_features_json_filename, 'w') as writer:
+        json.dump({ORDERED_FEATURES_KEY: out_features}, writer, sort_keys=True, indent=4)
+    print("Created header file {}, time={}.".format(out_ordered_features_json_filename, t2-t1))
 
     # Write output npz
     def zipsave(out_filename, start_row, end_row):
@@ -211,7 +217,7 @@ def get_parser():
     """Set up and return argument parser."""
     desc = """Convert fextract csv file to zipped numpy files, including
     ${output_prefix}.train.npz - num_train_rows rows
-    ${output_prefix}.test.npz - others"""
+    ${output_prefix}.test.npz - others\n"""
     p = argparse.ArgumentParser(desc)
     p.add_argument("fextract_filename", help="fextract csv file")
     p.add_argument("output_prefix", help="Output prefix")

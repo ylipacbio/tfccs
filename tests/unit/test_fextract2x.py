@@ -3,7 +3,7 @@ import os.path as op
 import numpy as np
 import pytest
 from tfccs.fextract2stat import compute_feature_stats
-from tfccs.utils import load_fextract_stat_json, load_fextract_npz
+from tfccs.utils import load_fextract_stat_json_2, load_fextract_npz
 from tfccs.fextract2numpy import fextract2numpy
 
 
@@ -42,7 +42,7 @@ def test_f2stat_f2npz():
     compute_feature_stats(in_csv=in_csv, out_json=out_json, forward_only_ccs=False)
 
     # Step 3: read stat from json and compare with expected
-    out_d, out_features = load_fextract_stat_json(out_json)
+    out_d, out_features = load_fextract_stat_json_2(out_json)
     assert out_features == set(['F1', 'F2'])
 
     assert out_d['F1'].mean == 3.0

@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import json
+from tfccs.constants import BASE_FEATURE_STAT_KEY
 
 
 def load_fextract_npz(npz_filename):
@@ -52,10 +53,19 @@ class FextractStat(object):
                             stat_max=d['max'][feature])
 
 
-def load_fextract_stat_json(in_json):
+def load_fextract_stat_json_1(in_json):
     """
     Read fextract.stat.json, and load mean, stdev, min, max of trainable variables.
     return ({feature: FextractStat} , features)
+    E.x. Input looks like:
+    {"mean": { "IsHP": 0.5, "CCSBaseSNR": 2.0},
+     "stdev": { "IsHP": 0.3, "CCSBaseSNR": 1.0},
+     "min": { "IsHP": 0.0, "CCSBaseSNR": 1.0},
+     "max": { "IsHP": 1.0, "CCSBaseSNR": 3.0} }
+    Output looks like: (out, features), where
+    out = {"IsHP": FextractStat("IsHP", 0.5, 0.3, 0.0, 1.0),
+           "CCSBaseSNR": FextractStat("CCSBaseSNR", 2.0, 1.0, 1.0, 3.0)}
+    features = set(["IsHP", "CCSBaseSNR"])
     """
     d = json.load(open(in_json, 'r'))
     for expected_stat in FextractStat.STAT_NAMES:
@@ -68,6 +78,39 @@ def load_fextract_stat_json(in_json):
                 expected_stat, in_json, set(features).difference(set(d[expected_stat]))))
 
     out = {feature: FextractStat.from_json_d(d, feature) for feature in features}
+    return out, set(features)
+
+
+def load_fextract_stat_json_2(in_json):
+    """
+    Read fextract.stat.json, and load mean, stdev, min, max of trainable variables.
+    return ({feature: FextractStat} , features).
+    E.x., Input Json looks like
+    {"BaseFeatureStat": [
+        {"name": "IsHP", "min": 0, "max": 1, "mean": 0.51, "stdev": 0.3}
+        {"name": "CcsSNR", "min": 1.0, "max": 3.0, "mean": 2.0, "stdev": 1.0}
+    ]}
+    Output looks like: (out, features), where
+    out = {"IsHP": FextractStat("IsHP", 0.5, 0.3, 0.0, 1.0),
+           "CCSBaseSNR": FextractStat("CCSBaseSNR", 2.0, 1.0, 1.0, 3.0)}
+    features = set(["IsHP", "CCSBaseSNR"])
+    """
+    d = json.load(open(in_json, 'r'))
+    if BASE_FEATURE_STAT_KEY not in d:
+        raise ValueError("Could not find {} as Json root!".format(BASE_FEATURE_STAT_KEY))
+    expected_stats = FextractStat.STAT_NAMES + ['name']
+    features = []
+    out = {}
+    for item in d[BASE_FEATURE_STAT_KEY]:
+        # sanity check 'name', 'mean', ... exists in each item
+        for expected_stat in expected_stats:
+            if expected_stat not in item:
+                raise ValueError("Key {} must exist in {}!".format(expected_stat, item))
+        # add current feature and its stat
+        feature = item['name']
+        features.append(feature)
+        out[feature] = FextractStat(feature, float(item['mean']), float(item['stdev']),
+                                    float(item['min']), float(item['max']))
     return out, set(features)
 
 

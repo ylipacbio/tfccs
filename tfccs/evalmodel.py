@@ -9,9 +9,17 @@ from tfccs.fextract2numpy import one_hot_to_cigar, convert_fextract_row
 from argparse import ArgumentParser
 
 
+DEBUG = False
+
 def eval_model(model_dir, x_test, y_test):
+    if DEBUG:
+        for idx, row in enumerate(x_test):
+            print(', '.join(['{:0.5f}'.format(col) for col in row]))
+            if idx == 5:
+                break
     model = tf.keras.models.load_model(model_dir)
     predicts = model.predict(x_test)
+    print (predicts)
     loss, accuracy = model.evaluate(x_test, y_test)
     print("Loss of model {} on test data is: {}".format(model_dir, loss))
     print("Accuracy of model {} on test data is: {}".format(model_dir, accuracy))
@@ -37,16 +45,18 @@ def add_predicted_cigars_and_write(in_csv, predicted_cigars, out_csv):
     """
     with open(in_csv, 'r') as reader, open(out_csv, 'w') as writer:
         for idx, r in enumerate(reader):
+            predicted_cigar_idx = idx - 1
             if idx == 0:
-                writer.write(r.strip() + ',PredictedCigar\n')
-            elif idx == len(predicted_cigars):
-                return True
-            elif idx > len(predicted_cigars):
+                writer.write(r.strip() + ',PredictedCigar,Predicted=,PredictedI,PredictedX,PredictedD\n')
+            elif predicted_cigar_idx == len(predicted_cigars):
+                return
+            elif predicted_cigar_idx > len(predicted_cigars):
                 raise ValueError("Number of rows in in_csv {} NOT match number of predicted cigars {}.".format(
                     idx, len(predicted_cigars)))
             else:
-                predicted_cigar = one_hot_to_cigar(predicted_cigars[idx])
-                writer.write(r.strip() + ',{}\n'.format(predicted_cigar))
+                o0, o1, o2, o3 = predicted_cigars[predicted_cigar_idx]
+                predicted_cigar = one_hot_to_cigar(predicted_cigars[predicted_cigar_idx])
+                writer.write(r.strip() + ',{oc},{o0},{o1},{o2},{o3}\n'.format(oc=predicted_cigar,o0=o0, o1=o1, o2=o2, o3=o3))
 
 
 def run(args):

@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 
 DEBUG = False
 
+
 def eval_model(model_dir, x_test, y_test):
     if DEBUG:
         for idx, row in enumerate(x_test):
@@ -19,7 +20,7 @@ def eval_model(model_dir, x_test, y_test):
                 break
     model = tf.keras.models.load_model(model_dir)
     predicts = model.predict(x_test)
-    print (predicts)
+    print(predicts)
     loss, accuracy = model.evaluate(x_test, y_test)
     print("Loss of model {} on test data is: {}".format(model_dir, loss))
     print("Accuracy of model {} on test data is: {}".format(model_dir, accuracy))
@@ -56,7 +57,8 @@ def add_predicted_cigars_and_write(in_csv, predicted_cigars, out_csv):
             else:
                 o0, o1, o2, o3 = predicted_cigars[predicted_cigar_idx]
                 predicted_cigar = one_hot_to_cigar(predicted_cigars[predicted_cigar_idx])
-                writer.write(r.strip() + ',{oc},{o0},{o1},{o2},{o3}\n'.format(oc=predicted_cigar,o0=o0, o1=o1, o2=o2, o3=o3))
+                writer.write(
+                    r.strip() + ',{oc},{o0},{o1},{o2},{o3}\n'.format(oc=predicted_cigar, o0=o0, o1=o1, o2=o2, o3=o3))
 
 
 def run(args):

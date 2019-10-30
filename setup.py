@@ -26,7 +26,8 @@ setup(
     entry_points={'console_scripts': [
         'fextract2numpy=tfccs.fextract2numpy:main',
         'fextract2stat=tfccs.fextract2stat:main',
-        'multinomial=tfccs.multinomial:main',
+        'multinomial=tfccs.train:multinomial_main',
+        'cnn=tfccs.train:cnn_main',
         'evalmodel=tfccs.evalmodel:main',
     ]},
     install_requires=[],

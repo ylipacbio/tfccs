@@ -1,0 +1,19 @@
+--- external/grpc/src/core/lib/iomgr/socket_utils_common_posix.cc.orig	2019-11-04 15:21:45.193152000 -0800
++++ external/grpc/src/core/lib/iomgr/socket_utils_common_posix.cc	2019-11-04 15:22:21.863167000 -0800
+@@ -30,7 +30,15 @@
+ #include <fcntl.h>
+ #include <limits.h>
+ #include <netinet/in.h>
+-#include <netinet/tcp.h>
++#if defined __GLIBC__ && defined GRPC_HAVE_TCP_USER_TIMEOUT && !(__GLIBC_PREREQ(2, 17))
++/*
++ * TCP_USER_TIMEOUT wasn't imported to glibc until 2.17. Use Linux system
++ * header instead.
++ */
++#   include <linux/tcp.h>
++#else
++#   include <netinet/tcp.h>
++#endif
+ #include <stdio.h>
+ #include <string.h>
+ #include <sys/socket.h>

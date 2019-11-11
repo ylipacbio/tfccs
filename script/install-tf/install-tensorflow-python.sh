@@ -1,4 +1,4 @@
-function install_tf_on_pbcluster() {
+function install_tf_python_on_pbcluster() {
 echo "Install python 3.7.3 and tensorflow v2.0 to virtual env"
 
 . /mnt/software/Modules/current/init/sh
@@ -54,5 +54,6 @@ brew install graphvis
 
 echo "Launch jupyter notebook"
 juypter notebook&
-
 }
+
+install_tf_python_on_pbcluster

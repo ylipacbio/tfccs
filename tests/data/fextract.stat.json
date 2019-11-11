@@ -1,6 +1,816 @@
 {
     "BaseFeatureStat": [
-        {"name":"F1", "mean":1, "stdev": 3, "min":5, "max":6},
-        {"name":"F2", "mean":2, "stdev": 4, "min":4, "max":8}
+        {
+            "max": 105.0,
+            "mean": 2.9773049354553223,
+            "min": 0.0,
+            "name": "BaseCoverage_FWD",
+            "stdev": 1.8063915967941284
+        },
+        {
+            "max": 105.0,
+            "mean": 2.6730940341949463,
+            "min": 0.0,
+            "name": "BaseCoverage_REV",
+            "stdev": 1.7557226419448853
+        },
+        {
+            "max": 25.358999252319336,
+            "mean": 9.341704368591309,
+            "min": 2.500040054321289,
+            "name": "CCSBaseSNR",
+            "stdev": 4.855620861053467
+        },
+        {
+            "max": 52.0,
+            "mean": 1.898436427116394,
+            "min": 1.0,
+            "name": "CCSHPLength",
+            "stdev": 1.341281771659851
+        },
+        {
+            "max": 28.0,
+            "mean": 0.2363772988319397,
+            "min": 0.0,
+            "name": "Deletion0_FWD",
+            "stdev": 0.5821105241775513
+        },
+        {
+            "max": 23.0,
+            "mean": 0.5428873300552368,
+            "min": 0.0,
+            "name": "Deletion0_REV",
+            "stdev": 1.2475786209106445
+        },
+        {
+            "max": 49.0,
+            "mean": 0.5252441763877869,
+            "min": 0.0,
+            "name": "Deletion10_FWD_NEXT",
+            "stdev": 0.9203226566314697
+        },
+        {
+            "max": 48.0,
+            "mean": 0.523179829120636,
+            "min": 0.0,
+            "name": "Deletion10_FWD_PREV",
+            "stdev": 0.917201578617096
+        },
+        {
+            "max": 92.0,
+            "mean": 1.7606171369552612,
+            "min": 0.0,
+            "name": "Deletion10_REV_NEXT",
+            "stdev": 4.7147297859191895
+        },
+        {
+            "max": 92.0,
+            "mean": 1.7499098777770996,
+            "min": 0.0,
+            "name": "Deletion10_REV_PREV",
+            "stdev": 4.696715354919434
+        },
+        {
+            "max": 22.0,
+            "mean": 0.1341094970703125,
+            "min": 0.0,
+            "name": "Deletion1_FWD_NEXT",
+            "stdev": 0.4211600124835968
+        },
+        {
+            "max": 19.0,
+            "mean": 0.13491250574588776,
+            "min": 0.0,
+            "name": "Deletion1_FWD_PREV",
+            "stdev": 0.417072057723999
+        },
+        {
+            "max": 23.0,
+            "mean": 0.44475486874580383,
+            "min": 0.0,
+            "name": "Deletion1_REV_NEXT",
+            "stdev": 1.222439169883728
+        },
+        {
+            "max": 23.0,
+            "mean": 0.4433806240558624,
+            "min": 0.0,
+            "name": "Deletion1_REV_PREV",
+            "stdev": 1.2200795412063599
+        },
+        {
+            "max": 26.0,
+            "mean": 0.2505335509777069,
+            "min": 0.0,
+            "name": "Deletion3_FWD_NEXT",
+            "stdev": 0.6111079454421997
+        },
+        {
+            "max": 29.0,
+            "mean": 0.25575122237205505,
+            "min": 0.0,
+            "name": "Deletion3_FWD_PREV",
+            "stdev": 0.6115512847900391
+        },
+        {
+            "max": 46.0,
+            "mean": 0.8723635673522949,
+            "min": 0.0,
+            "name": "Deletion3_REV_NEXT",
+            "stdev": 2.397184133529663
+        },
+        {
+            "max": 46.0,
+            "mean": 0.8720404505729675,
+            "min": 0.0,
+            "name": "Deletion3_REV_PREV",
+            "stdev": 2.391180992126465
+        },
+        {
+            "max": 31.0,
+            "mean": 0.38803261518478394,
+            "min": 0.0,
+            "name": "Deletion6_FWD_NEXT",
+            "stdev": 0.7729721069335938
+        },
+        {
+            "max": 32.0,
+            "mean": 0.3907224237918854,
+            "min": 0.0,
+            "name": "Deletion6_FWD_PREV",
+            "stdev": 0.7742273807525635
+        },
+        {
+            "max": 69.0,
+            "mean": 1.3175760507583618,
+            "min": 0.0,
+            "name": "Deletion6_REV_NEXT",
+            "stdev": 3.53802490234375
+        },
+        {
+            "max": 69.0,
+            "mean": 1.3120315074920654,
+            "min": 0.0,
+            "name": "Deletion6_REV_PREV",
+            "stdev": 3.5282857418060303
+        },
+        {
+            "max": 5581.0,
+            "mean": 0.7428551912307739,
+            "min": 0.0,
+            "name": "Insertion10_FWD_NEXT",
+            "stdev": 12.750542640686035
+        },
+        {
+            "max": 6733.0,
+            "mean": 0.7539754509925842,
+            "min": 0.0,
+            "name": "Insertion10_FWD_PREV",
+            "stdev": 14.988839149475098
+        },
+        {
+            "max": 1812.0,
+            "mean": 0.4489801228046417,
+            "min": 0.0,
+            "name": "Insertion10_REV_NEXT",
+            "stdev": 5.58584451675415
+        },
+        {
+            "max": 2789.0,
+            "mean": 0.4680383503437042,
+            "min": 0.0,
+            "name": "Insertion10_REV_PREV",
+            "stdev": 7.410198211669922
+        },
+        {
+            "max": 1724.0,
+            "mean": 0.23553790152072906,
+            "min": 0.0,
+            "name": "Insertion1_FWD_NEXT",
+            "stdev": 5.500729560852051
+        },
+        {
+            "max": 1724.0,
+            "mean": 0.3448775112628937,
+            "min": 0.0,
+            "name": "Insertion1_FWD_PREV",
+            "stdev": 5.8446574211120605
+        },
+        {
+            "max": 2292.0,
+            "mean": 0.15998992323875427,
+            "min": 0.0,
+            "name": "Insertion1_REV_NEXT",
+            "stdev": 4.485857963562012
+        },
+        {
+            "max": 2292.0,
+            "mean": 0.2972208261489868,
+            "min": 0.0,
+            "name": "Insertion1_REV_PREV",
+            "stdev": 6.145654678344727
+        },
+        {
+            "max": 4120.0,
+            "mean": 0.41904008388519287,
+            "min": 0.0,
+            "name": "Insertion3_FWD_NEXT",
+            "stdev": 9.087682723999023
+        },
+        {
+            "max": 5400.0,
+            "mean": 0.41875261068344116,
+            "min": 0.0,
+            "name": "Insertion3_FWD_PREV",
+            "stdev": 9.148576736450195
+        },
+        {
+            "max": 3199.0,
+            "mean": 0.2671961188316345,
+            "min": 0.0,
+            "name": "Insertion3_REV_NEXT",
+            "stdev": 6.314106464385986
+        },
+        {
+            "max": 3199.0,
+            "mean": 0.2959498465061188,
+            "min": 0.0,
+            "name": "Insertion3_REV_PREV",
+            "stdev": 8.057741165161133
+        },
+        {
+            "max": 5581.0,
+            "mean": 0.5919004082679749,
+            "min": 0.0,
+            "name": "Insertion6_FWD_NEXT",
+            "stdev": 11.74138355255127
+        },
+        {
+            "max": 6733.0,
+            "mean": 0.5871922969818115,
+            "min": 0.0,
+            "name": "Insertion6_FWD_PREV",
+            "stdev": 12.829437255859375
+        },
+        {
+            "max": 1812.0,
+            "mean": 0.34894973039627075,
+            "min": 0.0,
+            "name": "Insertion6_REV_NEXT",
+            "stdev": 4.460297107696533
+        },
+        {
+            "max": 3598.0,
+            "mean": 0.38894107937812805,
+            "min": 0.0,
+            "name": "Insertion6_REV_PREV",
+            "stdev": 9.417634963989258
+        },
+        {
+            "max": 1.0,
+            "mean": 0.5072237253189087,
+            "min": 0.0,
+            "name": "IsCCSHP",
+            "stdev": 0.5000884532928467
+        },
+        {
+            "max": 82.5999984741211,
+            "mean": 1.5830695629119873,
+            "min": 1.0,
+            "name": "MeanSubreadHP0",
+            "stdev": 0.7866034507751465
+        },
+        {
+            "max": 105.0,
+            "mean": 1.6701667308807373,
+            "min": 1.0,
+            "name": "MeanSubreadHP0_FWD",
+            "stdev": 1.0556151866912842
+        },
+        {
+            "max": 136.33299255371094,
+            "mean": 1.5174520015716553,
+            "min": 1.0,
+            "name": "MeanSubreadHP0_REV",
+            "stdev": 0.8485413193702698
+        },
+        {
+            "max": 106.0,
+            "mean": 3.4839870929718018,
+            "min": 1.0,
+            "name": "MsaCoverage_FWD",
+            "stdev": 1.8608916997909546
+        },
+        {
+            "max": 105.0,
+            "mean": 3.6788361072540283,
+            "min": 0.0,
+            "name": "MsaCoverage_REV",
+            "stdev": 1.7613825798034668
+        },
+        {
+            "max": 51.0,
+            "mean": 0.2810559570789337,
+            "min": 0.0,
+            "name": "PosInCcsHP",
+            "stdev": 0.7454783320426941
+        },
+        {
+            "max": 17.32309913635254,
+            "mean": 10.748472213745117,
+            "min": 6.010369777679443,
+            "name": "SNR_A",
+            "stdev": 1.9050123691558838
+        },
+        {
+            "max": 25.358999252319336,
+            "mean": 15.874879837036133,
+            "min": 8.634830474853516,
+            "name": "SNR_C",
+            "stdev": 2.745490074157715
+        },
+        {
+            "max": 6.77938985824585,
+            "mean": 4.057798862457275,
+            "min": 2.500040054321289,
+            "name": "SNR_G",
+            "stdev": 0.6887847185134888
+        },
+        {
+            "max": 11.368599891662598,
+            "mean": 6.97810173034668,
+            "min": 3.9633100032806396,
+            "name": "SNR_T",
+            "stdev": 1.2658848762512207
+        },
+        {
+            "max": 99.0,
+            "mean": 2.562272310256958,
+            "min": 0.0,
+            "name": "SeqMatch0_FWD",
+            "stdev": 1.812694787979126
+        },
+        {
+            "max": 91.0,
+            "mean": 1.9775500297546387,
+            "min": 0.0,
+            "name": "SeqMatch0_REV",
+            "stdev": 1.7115296125411987
+        },
+        {
+            "max": 375.0,
+            "mean": 10.845231056213379,
+            "min": 0.0,
+            "name": "SeqMatch10_FWD_NEXT",
+            "stdev": 6.726204872131348
+        },
+        {
+            "max": 400.0,
+            "mean": 10.828292846679688,
+            "min": 0.0,
+            "name": "SeqMatch10_FWD_PREV",
+            "stdev": 6.715688228607178
+        },
+        {
+            "max": 378.0,
+            "mean": 8.504629135131836,
+            "min": 0.0,
+            "name": "SeqMatch10_REV_NEXT",
+            "stdev": 6.526603698730469
+        },
+        {
+            "max": 407.0,
+            "mean": 8.493721961975098,
+            "min": 0.0,
+            "name": "SeqMatch10_REV_PREV",
+            "stdev": 6.510684490203857
+        },
+        {
+            "max": 89.0,
+            "mean": 2.689241647720337,
+            "min": 0.0,
+            "name": "SeqMatch1_FWD_NEXT",
+            "stdev": 1.7556281089782715
+        },
+        {
+            "max": 101.0,
+            "mean": 2.67889404296875,
+            "min": 0.0,
+            "name": "SeqMatch1_FWD_PREV",
+            "stdev": 1.7525041103363037
+        },
+        {
+            "max": 102.0,
+            "mean": 2.10188889503479,
+            "min": 0.0,
+            "name": "SeqMatch1_REV_NEXT",
+            "stdev": 1.6853220462799072
+        },
+        {
+            "max": 84.0,
+            "mean": 2.0906527042388916,
+            "min": 0.0,
+            "name": "SeqMatch1_REV_PREV",
+            "stdev": 1.676843285560608
+        },
+        {
+            "max": 188.0,
+            "mean": 5.412045001983643,
+            "min": 0.0,
+            "name": "SeqMatch3_FWD_NEXT",
+            "stdev": 3.4141061305999756
+        },
+        {
+            "max": 195.0,
+            "mean": 5.418555736541748,
+            "min": 0.0,
+            "name": "SeqMatch3_FWD_PREV",
+            "stdev": 3.4120724201202393
+        },
+        {
+            "max": 191.0,
+            "mean": 4.234078884124756,
+            "min": 0.0,
+            "name": "SeqMatch3_REV_NEXT",
+            "stdev": 3.297334909439087
+        },
+        {
+            "max": 200.0,
+            "mean": 4.2446980476379395,
+            "min": 0.0,
+            "name": "SeqMatch3_REV_PREV",
+            "stdev": 3.295222043991089
+        },
+        {
+            "max": 278.0,
+            "mean": 8.129613876342773,
+            "min": 0.0,
+            "name": "SeqMatch6_FWD_NEXT",
+            "stdev": 5.0592827796936035
+        },
+        {
+            "max": 284.0,
+            "mean": 8.128076553344727,
+            "min": 0.0,
+            "name": "SeqMatch6_FWD_PREV",
+            "stdev": 5.057952880859375
+        },
+        {
+            "max": 295.0,
+            "mean": 6.368844985961914,
+            "min": 0.0,
+            "name": "SeqMatch6_REV_NEXT",
+            "stdev": 4.905228137969971
+        },
+        {
+            "max": 286.0,
+            "mean": 6.376229763031006,
+            "min": 0.0,
+            "name": "SeqMatch6_REV_PREV",
+            "stdev": 4.902621746063232
+        },
+        {
+            "max": 162.2010040283203,
+            "mean": 0.5629783272743225,
+            "min": 0.0,
+            "name": "StdevSubreadHP0",
+            "stdev": 0.7892475724220276
+        },
+        {
+            "max": 104.0,
+            "mean": 0.4068545401096344,
+            "min": 0.0,
+            "name": "StdevSubreadHP0_FWD",
+            "stdev": 0.7226681113243103
+        },
+        {
+            "max": 191.38999938964844,
+            "mean": 0.37895646691322327,
+            "min": 0.0,
+            "name": "StdevSubreadHP0_REV",
+            "stdev": 0.6839802265167236
+        },
+        {
+            "max": 95.0,
+            "mean": 1.2858108282089233,
+            "min": 0.0,
+            "name": "SubreadHP0_FWD",
+            "stdev": 1.6174191236495972
+        },
+        {
+            "max": 76.0,
+            "mean": 1.027673602104187,
+            "min": 0.0,
+            "name": "SubreadHP0_REV",
+            "stdev": 1.4327903985977173
+        },
+        {
+            "max": 99.0,
+            "mean": 0.6922227144241333,
+            "min": 0.0,
+            "name": "Subread_A_Count_FWD",
+            "stdev": 1.4313162565231323
+        },
+        {
+            "max": 61.0,
+            "mean": 0.5532290935516357,
+            "min": 0.0,
+            "name": "Subread_A_Count_REV",
+            "stdev": 1.2205172777175903
+        },
+        {
+            "max": 57.0,
+            "mean": 0.7333899736404419,
+            "min": 0.0,
+            "name": "Subread_C_Count_FWD",
+            "stdev": 1.5155709981918335
+        },
+        {
+            "max": 82.0,
+            "mean": 0.5923275351524353,
+            "min": 0.0,
+            "name": "Subread_C_Count_REV",
+            "stdev": 1.3024263381958008
+        },
+        {
+            "max": 86.0,
+            "mean": 0.6688166856765747,
+            "min": 0.0,
+            "name": "Subread_G_Count_FWD",
+            "stdev": 1.4097440242767334
+        },
+        {
+            "max": 53.0,
+            "mean": 0.4851830005645752,
+            "min": 0.0,
+            "name": "Subread_G_Count_REV",
+            "stdev": 1.1651458740234375
+        },
+        {
+            "max": 60.0,
+            "mean": 0.6464981436729431,
+            "min": 0.0,
+            "name": "Subread_T_Count_FWD",
+            "stdev": 1.36381995677948
+        },
+        {
+            "max": 91.0,
+            "mean": 0.49946701526641846,
+            "min": 0.0,
+            "name": "Subread_T_Count_REV",
+            "stdev": 1.1591473817825317
+        },
+        {
+            "max": 18.0,
+            "mean": 0.17865517735481262,
+            "min": 0.0,
+            "name": "Substitution0_FWD",
+            "stdev": 0.4527471363544464
+        },
+        {
+            "max": 19.0,
+            "mean": 0.1526566445827484,
+            "min": 0.0,
+            "name": "Substitution0_REV",
+            "stdev": 0.42679816484451294
+        },
+        {
+            "max": 50.0,
+            "mean": 0.5427142381668091,
+            "min": 0.0,
+            "name": "Substitution10_FWD_NEXT",
+            "stdev": 0.8915576338768005
+        },
+        {
+            "max": 37.0,
+            "mean": 0.5406447052955627,
+            "min": 0.0,
+            "name": "Substitution10_FWD_PREV",
+            "stdev": 0.8854394555091858
+        },
+        {
+            "max": 35.0,
+            "mean": 0.4361127018928528,
+            "min": 0.0,
+            "name": "Substitution10_REV_NEXT",
+            "stdev": 0.7997452020645142
+        },
+        {
+            "max": 27.0,
+            "mean": 0.43556079268455505,
+            "min": 0.0,
+            "name": "Substitution10_REV_PREV",
+            "stdev": 0.7986533641815186
+        },
+        {
+            "max": 17.0,
+            "mean": 0.15424928069114685,
+            "min": 0.0,
+            "name": "Substitution1_FWD_NEXT",
+            "stdev": 0.4168487787246704
+        },
+        {
+            "max": 18.0,
+            "mean": 0.16321755945682526,
+            "min": 0.0,
+            "name": "Substitution1_FWD_PREV",
+            "stdev": 0.4279572665691376
+        },
+        {
+            "max": 10.0,
+            "mean": 0.12711569666862488,
+            "min": 0.0,
+            "name": "Substitution1_REV_NEXT",
+            "stdev": 0.3764055371284485
+        },
+        {
+            "max": 18.0,
+            "mean": 0.1387782245874405,
+            "min": 0.0,
+            "name": "Substitution1_REV_PREV",
+            "stdev": 0.3956896960735321
+        },
+        {
+            "max": 19.0,
+            "mean": 0.2929844260215759,
+            "min": 0.0,
+            "name": "Substitution3_FWD_NEXT",
+            "stdev": 0.6075036525726318
+        },
+        {
+            "max": 16.0,
+            "mean": 0.2792419493198395,
+            "min": 0.0,
+            "name": "Substitution3_FWD_PREV",
+            "stdev": 0.5837861895561218
+        },
+        {
+            "max": 16.0,
+            "mean": 0.2418661266565323,
+            "min": 0.0,
+            "name": "Substitution3_REV_NEXT",
+            "stdev": 0.5556914806365967
+        },
+        {
+            "max": 26.0,
+            "mean": 0.22822615504264832,
+            "min": 0.0,
+            "name": "Substitution3_REV_PREV",
+            "stdev": 0.5357006192207336
+        },
+        {
+            "max": 34.0,
+            "mean": 0.41637182235717773,
+            "min": 0.0,
+            "name": "Substitution6_FWD_NEXT",
+            "stdev": 0.7556393146514893
+        },
+        {
+            "max": 22.0,
+            "mean": 0.408837229013443,
+            "min": 0.0,
+            "name": "Substitution6_FWD_PREV",
+            "stdev": 0.7439906001091003
+        },
+        {
+            "max": 22.0,
+            "mean": 0.3374580442905426,
+            "min": 0.0,
+            "name": "Substitution6_REV_NEXT",
+            "stdev": 0.684576690196991
+        },
+        {
+            "max": 20.0,
+            "mean": 0.3275092542171478,
+            "min": 0.0,
+            "name": "Substitution6_REV_PREV",
+            "stdev": 0.6665804982185364
+        },
+        {
+            "max": 17.0,
+            "mean": 0.5066821575164795,
+            "min": 0.0,
+            "name": "Unmapped0_FWD",
+            "stdev": 0.8108081221580505
+        },
+        {
+            "max": 38.0,
+            "mean": 1.005742073059082,
+            "min": 0.0,
+            "name": "Unmapped0_REV",
+            "stdev": 1.1230114698410034
+        },
+        {
+            "max": 64.0,
+            "mean": 2.0227582454681396,
+            "min": 0.0,
+            "name": "Unmapped10_FWD_NEXT",
+            "stdev": 3.2353062629699707
+        },
+        {
+            "max": 83.0,
+            "mean": 2.0311925411224365,
+            "min": 0.0,
+            "name": "Unmapped10_FWD_PREV",
+            "stdev": 3.2595572471618652
+        },
+        {
+            "max": 145.0,
+            "mean": 4.0139851570129395,
+            "min": 0.0,
+            "name": "Unmapped10_REV_NEXT",
+            "stdev": 4.478639602661133
+        },
+        {
+            "max": 172.0,
+            "mean": 4.023239612579346,
+            "min": 0.0,
+            "name": "Unmapped10_REV_PREV",
+            "stdev": 4.493653297424316
+        },
+        {
+            "max": 16.0,
+            "mean": 0.5063865184783936,
+            "min": 0.0,
+            "name": "Unmapped1_FWD_NEXT",
+            "stdev": 0.8102291822433472
+        },
+        {
+            "max": 26.0,
+            "mean": 0.5068812966346741,
+            "min": 0.0,
+            "name": "Unmapped1_FWD_PREV",
+            "stdev": 0.8114613890647888
+        },
+        {
+            "max": 38.0,
+            "mean": 1.00507652759552,
+            "min": 0.0,
+            "name": "Unmapped1_REV_NEXT",
+            "stdev": 1.1218816041946411
+        },
+        {
+            "max": 38.0,
+            "mean": 1.0059404373168945,
+            "min": 0.0,
+            "name": "Unmapped1_REV_PREV",
+            "stdev": 1.123319387435913
+        },
+        {
+            "max": 32.0,
+            "mean": 1.01241135597229,
+            "min": 0.0,
+            "name": "Unmapped3_FWD_NEXT",
+            "stdev": 1.6198813915252686
+        },
+        {
+            "max": 53.0,
+            "mean": 1.0139727592468262,
+            "min": 0.0,
+            "name": "Unmapped3_FWD_PREV",
+            "stdev": 1.6235159635543823
+        },
+        {
+            "max": 76.0,
+            "mean": 2.0093634128570557,
+            "min": 0.0,
+            "name": "Unmapped3_REV_NEXT",
+            "stdev": 2.2423338890075684
+        },
+        {
+            "max": 80.0,
+            "mean": 2.0122485160827637,
+            "min": 0.0,
+            "name": "Unmapped3_REV_PREV",
+            "stdev": 2.247901201248169
+        },
+        {
+            "max": 48.0,
+            "mean": 1.5179429054260254,
+            "min": 0.0,
+            "name": "Unmapped6_FWD_NEXT",
+            "stdev": 2.429407835006714
+        },
+        {
+            "max": 96.0,
+            "mean": 1.5226776599884033,
+            "min": 0.0,
+            "name": "Unmapped6_FWD_PREV",
+            "stdev": 2.4422760009765625
+        },
+        {
+            "max": 113.0,
+            "mean": 3.0126290321350098,
+            "min": 0.0,
+            "name": "Unmapped6_REV_NEXT",
+            "stdev": 3.361419439315796
+        },
+        {
+            "max": 129.0,
+            "mean": 3.0190269947052,
+            "min": 0.0,
+            "name": "Unmapped6_REV_PREV",
+            "stdev": 3.3746495246887207
+        }
     ]
 }

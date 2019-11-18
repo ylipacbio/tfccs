@@ -3,8 +3,8 @@ import os.path as op
 import numpy as np
 import pytest
 from tfccs.fextract2stat import compute_feature_stats
-from tfccs.utils import load_fextract_stat_json_2, load_fextract_npz
-from tfccs.fextract2numpy import fextract2numpy
+from tfccs.utils import load_fextract_stat_json, load_fextract_npz
+from tfccs.fextract2numpy import fextract2numpy, one_hot_encode_cigar, one_hot_to_cigar
 
 
 ROOT_DIR = op.dirname(op.dirname(__file__))
@@ -42,7 +42,7 @@ def test_f2stat_f2npz():
     compute_feature_stats(in_csv=in_csv, out_json=out_json, forward_only_ccs=False)
 
     # Step 3: read stat from json and compare with expected
-    out_d, out_features = load_fextract_stat_json_2(out_json)
+    out_d, out_features = load_fextract_stat_json(out_json)
     assert out_features == set(['F1', 'F2'])
 
     assert out_d['F1'].mean == 3.0
@@ -105,3 +105,15 @@ def test_f2stat_f2npz():
         fextract2numpy(fextract_filename=in_csv, output_prefix=op.join(out_dir, 'f2n.2'), num_train_rows=500,
                        forward_only_ccs=False, no_dump_remaining=True, stat_json=out_json)
     assert err.value.args[0] == "Output empty train data!"
+
+
+def test_one_hot():
+    assert one_hot_encode_cigar('=') == [1, 0, 0, 0]
+    assert one_hot_encode_cigar('I') == [0, 1, 0, 0]
+    assert one_hot_encode_cigar('X') == [0, 0, 1, 0]
+    assert one_hot_encode_cigar('D') == [0, 0, 0, 1]
+
+    assert one_hot_to_cigar([1, 0, 0, 0]) == '='
+    assert one_hot_to_cigar([0, 1, 0, 0]) == 'I'
+    assert one_hot_to_cigar([0, 0, 1, 0]) == 'X'
+    assert one_hot_to_cigar([0, 0, 0, 1]) == 'D'

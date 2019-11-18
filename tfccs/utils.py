@@ -53,35 +53,7 @@ class FextractStat(object):
                             stat_max=d['max'][feature])
 
 
-def load_fextract_stat_json_1(in_json):
-    """
-    Read fextract.stat.json, and load mean, stdev, min, max of trainable variables.
-    return ({feature: FextractStat} , features)
-    E.x. Input looks like:
-    {"mean": { "IsHP": 0.5, "CCSBaseSNR": 2.0},
-     "stdev": { "IsHP": 0.3, "CCSBaseSNR": 1.0},
-     "min": { "IsHP": 0.0, "CCSBaseSNR": 1.0},
-     "max": { "IsHP": 1.0, "CCSBaseSNR": 3.0} }
-    Output looks like: (out, features), where
-    out = {"IsHP": FextractStat("IsHP", 0.5, 0.3, 0.0, 1.0),
-           "CCSBaseSNR": FextractStat("CCSBaseSNR", 2.0, 1.0, 1.0, 3.0)}
-    features = set(["IsHP", "CCSBaseSNR"])
-    """
-    d = json.load(open(in_json, 'r'))
-    for expected_stat in FextractStat.STAT_NAMES:
-        if expected_stat not in [k for k in d.keys()]:
-            raise ValueError("Key {} must exist in {}!".format(expected_stat, in_json))
-    features = d['mean'].keys()
-    for expected_stat in FextractStat.STAT_NAMES:
-        if d[expected_stat].keys() != features:
-            raise ValueError("Features of stat {} in json file {} differ from stat 'mean', missing {}!".format(
-                expected_stat, in_json, set(features).difference(set(d[expected_stat]))))
-
-    out = {feature: FextractStat.from_json_d(d, feature) for feature in features}
-    return out, set(features)
-
-
-def load_fextract_stat_json_2(in_json):
+def load_fextract_stat_json(in_json):
     """
     Read fextract.stat.json, and load mean, stdev, min, max of trainable variables.
     return ({feature: FextractStat} , features).
@@ -120,9 +92,6 @@ def cap_outlier_standardize(a, stat, N=4):
     For outliers that are too far away from center, cap at -N or N.
     --- a - 1d np array
     --- stat - FextractStat oject
-    doctest:
-    >>> cap_outlier_standardize([0, 1, 2, 3, 7], FextractStat('F1', 2, 1, 0, 4), 3]
-    [-2, -1, 0, 1, 4]
     """
-    a = (a - stat.mean) / stat.stdev   # standardize to center 0, mostly within 0, 1
+    a = (np.asarray(a) - stat.mean) / stat.stdev   # standardize to center 0, mostly within 0, 1
     return np.clip(a, -N, N)

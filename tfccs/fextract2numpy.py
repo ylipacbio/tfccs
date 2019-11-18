@@ -15,8 +15,8 @@ import argparse
 import csv
 import sys
 import json
-from tfccs.constants import NO_TRAIN_FEATURES, ORDERED_FEATURES_KEY
-from tfccs.utils import load_fextract_stat_json_2, is_good_fextract_row, cap_outlier_standardize
+from tfccs.constants import NO_TRAIN_FEATURES, ORDERED_FEATURES_KEY, BASE_MAP_PROBABILITY_KEY
+from tfccs.utils import load_fextract_stat_json, is_good_fextract_row, cap_outlier_standardize
 
 
 DUPLICATED_FEATURES = ["CCSBaseSNR"]  # duplication of SNR_A/SNR_C/SNR_G/SNR_T
@@ -49,15 +49,21 @@ def one_hot_base(base):
             "CCSBaseT": 1 if base in 'Tt' else 0}
 
 
+def cigar_index_in_one_hot(cigar):
+    # Must match one_hot_to_cigar
+    d = {'=': 0, 'I': 1, 'X': 2, 'D': 3}
+    return d[cigar]
+
+
 def one_hot_encode_cigar(cigar):
     assert cigar in '=IDX'
-    return [1 if cigar == '=' else 0,
-            1 if cigar == 'I' else 0,
-            1 if cigar == 'X' else 0,
-            1 if cigar == 'D' else 0]
+    ret = [0, 0, 0, 0]
+    ret[cigar_index_in_one_hot(cigar)] = 1
+    return ret
 
 
 def one_hot_to_cigar(one_hot):
+    # Must match cigar_index_in_one_hot
     assert len(one_hot) == 4
     idx = np.argmax(one_hot)
     d = {0: '=', 1: 'I', 2: 'X', 3: 'D'}
@@ -71,10 +77,12 @@ def ccs2genome_cigar_counting_prev_dels(current_cigar, num_prev_deletions):
     2) otherwise, return 'D' regardless of how this CCS base map to genome
     """
     num_prev_deletions = int(num_prev_deletions)
-    if num_prev_deletions == 0:
+    if num_prev_deletions != 0:
         return one_hot_encode_cigar('D')
     assert current_cigar in '=IX'
-    return one_hot_encode_cigar(current_cigar)
+    ret = one_hot_encode_cigar(current_cigar)
+    print("one hot of '{}' is {}".format(current_cigar, ret))
+    return ret
 
 
 def convert_fextract_row(input_d):
@@ -85,12 +93,13 @@ def convert_fextract_row(input_d):
     """
     base_d = one_hot_base(input_d['CCSBase'])
     arrow_qv = int(input_d["ArrowQv"])
-    ccs2genomer_cigar = ccs2genome_cigar_counting_prev_dels(input_d['CCSToGenomeCigar'],
-                                                            input_d['CcsToGenomePrevDeletions'])
+    ccs2genome_cigar = ccs2genome_cigar_counting_prev_dels(input_d['CCSToGenomeCigar'],
+                                                           input_d['CcsToGenomePrevDeletions'])
+    print("{}, {} -> {}".format(input_d['CCSToGenomeCigar'], input_d['CcsToGenomePrevDeletions'], ccs2genome_cigar))
     input_d.update(base_d)
     for feature in NO_TRAIN_FEATURES + ['CCSBase'] + DUPLICATED_FEATURES:
         input_d.pop(feature, None)
-    return input_d, arrow_qv, ccs2genomer_cigar
+    return input_d, arrow_qv, ccs2genome_cigar
 
 
 def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_only_ccs, no_dump_remaining, stat_json):
@@ -102,7 +111,7 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     # If fextract.stat.json was provided as input, check features in csv and stat.json MATCH
     stat_d, stat_features = None, None
     if stat_json is not None:
-        stat_d, stat_features = load_fextract_stat_json_2(stat_json)
+        stat_d, stat_features = load_fextract_stat_json(stat_json)
         trainable_features = set(features).difference(set(NO_TRAIN_FEATURES + ['CCSBase']))
         if trainable_features != stat_features:
             raise ValueError("Features in csv and stat.json differ!\n" +
@@ -114,6 +123,7 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     ccs2genome_cigars = []
     idx = 0
     out_features = None
+
     t0 = datetime.datetime.now()
     raw_train_writer = open(output_prefix + '.train.fextract.csv', 'w')
     raw_train_writer.write(header)
@@ -199,6 +209,28 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
         zipsave(out_test_filename, num_train_rows, len(dataset))
         t4 = datetime.datetime.now()
         print("Dumped {} rows of test data, time={} ".format(len(dataset) - num_train_rows, t4-t3))
+
+    def base_map_probability(cc2genome_cigars, start_row, end_row):
+        # Return fraction of bases in 'I=XD' classes
+        c = ccs2genome_cigars[start_row:end_row]
+        n = len(c)
+        a = sum(c)
+        assert len(a) == 4, "Must have exactly 4 output classes each representing a cigar operation"
+        # see one_hot_encode_cigar, order '=IDX': {0, 1, 2, 3}
+        out_probs = {"Sampling": {
+            "SequenceMatch": a[cigar_index_in_one_hot('=')] / n,
+            "Insertion": a[cigar_index_in_one_hot('I')] / n,
+            "Substitution": a[cigar_index_in_one_hot('X')] / n,
+            "PreviousIsDeletion": a[cigar_index_in_one_hot('D')] / n
+        }}
+        return out_probs
+
+    # Write probabilty of base map '=IXD' in Sampling spaces.
+    out_base_map_prob_json = output_prefix + '.base_map_probability.json'
+    out_probs = base_map_probability(ccs2genome_cigars, 0, num_train_rows)
+    print("Dump Base Map probability {} to: {}".format(out_probs, out_base_map_prob_json))
+    with open(out_base_map_prob_json, 'w') as writer:
+        json.dump({BASE_MAP_PROBABILITY_KEY: out_probs}, writer, sort_keys=True, indent=4)
 
 
 def run(args):

@@ -18,3 +18,4 @@ Insertion0_REV
 
 ORDERED_FEATURES_KEY = "OrderedFeatures"
 BASE_FEATURE_STAT_KEY = "BaseFeatureStat"
+BASE_MAP_PROBABILITY_KEY = "BaseMapProbability"

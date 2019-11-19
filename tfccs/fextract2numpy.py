@@ -81,7 +81,6 @@ def ccs2genome_cigar_counting_prev_dels(current_cigar, num_prev_deletions):
         return one_hot_encode_cigar('D')
     assert current_cigar in '=IX'
     ret = one_hot_encode_cigar(current_cigar)
-    print("one hot of '{}' is {}".format(current_cigar, ret))
     return ret
 
 
@@ -95,7 +94,7 @@ def convert_fextract_row(input_d):
     arrow_qv = int(input_d["ArrowQv"])
     ccs2genome_cigar = ccs2genome_cigar_counting_prev_dels(input_d['CCSToGenomeCigar'],
                                                            input_d['CcsToGenomePrevDeletions'])
-    print("{}, {} -> {}".format(input_d['CCSToGenomeCigar'], input_d['CcsToGenomePrevDeletions'], ccs2genome_cigar))
+    # print("{}, {} -> {}".format(input_d['CCSToGenomeCigar'], input_d['CcsToGenomePrevDeletions'], ccs2genome_cigar))
     input_d.update(base_d)
     for feature in NO_TRAIN_FEATURES + ['CCSBase'] + DUPLICATED_FEATURES:
         input_d.pop(feature, None)

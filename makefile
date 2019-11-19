@@ -17,6 +17,7 @@ dump-tiny:
 dump-full:
 	python tfccs/fextract2numpy.py \
 		${fextract_csv} \
+		--stat-json ${in_stat_json} \
 		/pbi/dept/secondary/siv/testdata/ccsqv/Mule/lambda/tfccs/output
 build:
 	pip install --edit .

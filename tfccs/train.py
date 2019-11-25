@@ -4,7 +4,7 @@ import sys
 import os
 import os.path as op
 from tfccs.utils import load_fextract_npz
-from tfccs.models import create_and_compile_multinomial_model, create_and_compile_cnn_model
+from tfccs.models import *
 import argparse
 
 
@@ -66,20 +66,23 @@ def get_train_parser():
     p.add_argument("--name", help="Model name.")
     p.add_argument("--batch-size", default=32, type=int, help="Batch size")
     p.add_argument("--epochs", default=500, type=int, help="Epochs")
+    p.add_argument("--model-id", default=0, type=int, help="Model Id")
     return p
 
 
 def multinomial_main(args=sys.argv[1:]):
     """multinomial main"""
     args = get_train_parser().parse_args(args)
-    train_ccs2genome(args, create_and_compile_model_func=create_and_compile_multinomial_model)
+    model_id = args.model_id
+    model_func_dict = {0: multinomial_model_0, 1: multinomial_model_1}
+    train_ccs2genome(args, create_and_compile_model_func=model_func_dict[model_id])
     return 0
 
 
 def cnn_main(args=sys.argv[1:]):
     """cnn main"""
     args = get_train_parser().parse_args(args)
-    train_ccs2genome(args, create_and_compile_model_func=create_and_compile_cnn_model)
+    train_ccs2genome(args, create_and_compile_model_func=cnn_model)
     return 0
 
 

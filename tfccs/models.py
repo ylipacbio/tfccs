@@ -1,15 +1,36 @@
 import tensorflow as tf
 
 
-def create_and_compile_multinomial_model(x_ncol, y_ncol):
+def multinomial_model_0(x_ncol, y_ncol):
     model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(y_ncol, kernel_initializer="random_uniform", activation="softmax", input_shape=(x_ncol,))
+        tf.keras.layers.Dense(y_ncol, kernel_initializer="random_uniform", activation="softmax", input_shape=(x_ncol,), name="out_layer")
     ])
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
 
-def create_and_compile_cnn_model(x_ncol, y_ncol):
+def multinomial_model_1(x_ncol, y_ncol):
+    # Use one hidden layer, use regularizer
+    hidden_layer_nodes = 64
+    regularization_weight = 0.001
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(hidden_layer_nodes,
+                              kernel_initializer="random_uniform",
+                              kernel_regularizer=tf.keras.regularizers.l2(regularization_weight),
+                              activation="relu",
+                              input_shape=(x_ncol,)),
+        tf.keras.layers.Dense(y_ncol,
+                              kernel_initializer="random_uniform",
+                              kernel_regularizer=tf.keras.regularizers.l2(regularization_weight),
+                              activation="softmax",
+                              input_shape=(hidden_layer_nodes,),
+                              name="out_layer")
+    ])
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    return model
+
+
+def cnn_model(x_ncol, y_ncol):
     model = tf.keras.models.Sequential([
         tf.keras.layers.Dense(int(x_ncol/2), kernel_initializer="random_uniform",
                               activation="relu", input_shape=(x_ncol,)),

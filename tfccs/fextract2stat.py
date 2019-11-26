@@ -15,13 +15,16 @@ from tfccs.constants import NO_TRAIN_FEATURES, BASE_FEATURE_STAT_KEY
 from tfccs.utils import is_good_fextract_row
 
 
-def compute_feature_stats(in_csv, out_json, forward_only_ccs):
+def compute_feature_stats(in_csv, out_json, min_dist2end, allowed_strands, allowed_ccs2genome_cigars):
     reader = csv.DictReader(open(in_csv, 'r'), delimiter=',')
     dataset = []
     t0 = datetime.datetime.now()
     features = sorted(set(reader.fieldnames).difference(NO_TRAIN_FEATURES + ["CCSBase"]))
     for idx, r in enumerate(reader):
-        if not is_good_fextract_row(r, forward_only_ccs=forward_only_ccs):
+        is_good = is_good_fextract_row(r, min_dist2end=min_dist2end,
+                                       allowed_strands=allowed_strands,
+                                       allowed_ccs2genome_cigars=allowed_ccs2genome_cigars)
+        if not is_good:
             continue
         values = [r[feature] for feature in features]
         dataset.append(values)
@@ -64,7 +67,9 @@ def compute_feature_stats(in_csv, out_json, forward_only_ccs):
 
 
 def run(args):
-    compute_feature_stats(in_csv=args.in_csv, out_json=args.out_json, forward_only_ccs=not args.both_strands)
+    compute_feature_stats(in_csv=args.in_csv, out_json=args.out_json,
+                          min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
+                          allowed_ccs2genome_cigars=args.allowed_cigars)
     return 0
 
 
@@ -74,9 +79,13 @@ def get_parser():
     p = argparse.ArgumentParser(desc)
     p.add_argument("in_csv", help="Input fextract csv file")
     p.add_argument("out_json", help="Output stat json file contain mean, stdev, min, max of trainable features")
-    p.add_argument("--both-strands", default=False,
-                   help="Default=False, only use CCS forward mapped to genome, otherwise use both stranded CCS",
-                   action="store_true")
+    p.add_argument("--min_dist2end", default=100,
+                   help="Ignore a base if its distance to either ends is less than min_dist2end bp")
+    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
+                   help=("Ignore a base if it maps to genome in a not-allowed strand. " +
+                         "F - forward strand, R - reverse strand, FR - both strands"))
+    p.add_argument("--allowed-cigars", default="IX=",
+                   help="Ignore a base if it maps to genome with a not-allowed cigar")
     return p
 
 

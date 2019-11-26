@@ -17,22 +17,21 @@ def load_fextract_npz(npz_filename):
     return d['fextractinput'], d['arrowqv'], d['arrowqvbin8'], d['ccs2genome_cigars'], nrow, ncol
 
 
-def is_good_fextract_row(in_d, forward_only_ccs=True):
+def is_good_fextract_row(in_d, min_dist2end=100, allowed_strands="F", allowed_ccs2genome_cigars="I=X"):
     """
     Return False if fextract row's
     1) ccs base is within 100bp end of CCS read
-    2) ccs read map to reference genome in reverse strand, while forward_only_ccs is True
+    2) ccs read map to reference genome in reverse strand,
     3) ccs2genome cigar is in 'I=X'
     """
-    dist2end = abs(int(in_d["CCSLength"]) - int(in_d["CCSPos"]))
-    if 'CCSToGenomeCigar' in in_d and in_d['CCSToGenomeCigar'] not in 'I=X':
+    if 'CCSToGenomeCigar' in in_d and in_d['CCSToGenomeCigar'] not in allowed_ccs2genome_cigars:
         return False
-    if not forward_only_ccs:
-        return dist2end > 100
-    else:
-        strand = in_d["CCSToGenomeStrand"]
-        assert strand in 'FR'
-        return dist2end > 100 and strand == 'F'
+    dist2end = abs(int(in_d["CCSLength"]) - int(in_d["CCSPos"]))
+    if dist2end < min_dist2end:
+        return False
+    if 'CCSToGenomeStrand' in in_d and in_d["CCSToGenomeStrand"] not in allowed_strands:
+        return False
+    return True
 
 
 class FextractStat(object):

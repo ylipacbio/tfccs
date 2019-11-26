@@ -3,7 +3,8 @@ import tensorflow as tf
 
 def multinomial_model_0(x_ncol, y_ncol):
     model = tf.keras.models.Sequential([
-        tf.keras.layers.Dense(y_ncol, kernel_initializer="random_uniform", activation="softmax", input_shape=(x_ncol,), name="out_layer")
+        tf.keras.layers.Dense(y_ncol, kernel_initializer="random_uniform",
+                              activation="softmax", input_shape=(x_ncol,), name="out_layer")
     ])
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model

@@ -39,7 +39,8 @@ def test_f2stat_f2npz():
 
     # Step 2: compute stats and dump stat to json
     out_json = op.join(out_dir, 'out.stat.json')
-    compute_feature_stats(in_csv=in_csv, out_json=out_json, forward_only_ccs=False)
+    compute_feature_stats(in_csv=in_csv, out_json=out_json,
+                          min_dist2end=100, allowed_strands='FR', allowed_ccs2genome_cigars='IX=')
 
     # Step 3: read stat from json and compare with expected
     out_d, out_features = load_fextract_stat_json(out_json)
@@ -59,7 +60,8 @@ def test_f2stat_f2npz():
     out_train_npz = op.join(out_dir, 'f2n.train.npz')
     out_header = op.join(out_dir, 'f2n.train.header')
     fextract2numpy(fextract_filename=in_csv, output_prefix=op.join(out_dir, 'f2n'), num_train_rows=500,
-                   forward_only_ccs=False, no_dump_remaining=True, stat_json=out_json)
+                   min_dist2end=100, allowed_strands='FR', allowed_ccs2genome_cigars='IX=',
+                   no_dump_remaining=True, stat_json=out_json)
     assert op.exists(out_train_npz)
     assert op.exists(out_header)
     assert 'F1,F2,CCSBaseA,CCSBaseC,CCSBaseG,CCSBaseT' == [r.strip() for r in open(out_header,'r')][0]
@@ -103,7 +105,8 @@ def test_f2stat_f2npz():
     out_train_npz = op.join(out_dir, 'f2n.2.train.npz')
     with pytest.raises(ValueError) as err:
         fextract2numpy(fextract_filename=in_csv, output_prefix=op.join(out_dir, 'f2n.2'), num_train_rows=500,
-                       forward_only_ccs=False, no_dump_remaining=True, stat_json=out_json)
+                       min_dist2end=100, allowed_strands='FR', allowed_ccs2genome_cigars='IX=',
+                       no_dump_remaining=True, stat_json=out_json)
     assert err.value.args[0] == "Output empty train data!"
 
 

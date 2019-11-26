@@ -101,7 +101,10 @@ def convert_fextract_row(input_d):
     return input_d, arrow_qv, ccs2genome_cigar
 
 
-def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_only_ccs, no_dump_remaining, stat_json):
+def fextract2numpy(fextract_filename, output_prefix,
+                   min_dist2end, allowed_strands,
+                   allowed_ccs2genome_cigars, num_train_rows,
+                   no_dump_remaining, stat_json):
     reader = csv.DictReader(open(fextract_filename, 'r'), delimiter=',')
     raw_reader = open(fextract_filename, 'r')
     header = next(raw_reader)  # Skip header
@@ -129,7 +132,8 @@ def fextract2numpy(fextract_filename, output_prefix, num_train_rows, forward_onl
     raw_test_writer = open(output_prefix + '.test.fextract.csv', 'w')
     raw_test_writer.write(header)
     for r, raw_r in zip(reader, raw_reader):
-        if not is_good_fextract_row(r, forward_only_ccs=forward_only_ccs):
+        is_good = is_good_fextract_row(r, min_dist2end, allowed_strands, allowed_ccs2genome_cigars)
+        if not is_good:
             continue
         out_r, arrow_qv, ccs2genome_cigar = convert_fextract_row(r)
         if out_features is None:
@@ -239,8 +243,10 @@ def run(args):
         if not args.stat_json.endswith('.stat.json'):
             raise ValueError("Input --stat-json file {} must ends with '.stat.json'")
 
-    fextract2numpy(fextract_filename=args.fextract_filename, output_prefix=args.output_prefix, num_train_rows=args.num_train_rows,
-                   forward_only_ccs=not args.both_strands, no_dump_remaining=args.no_dump_remaining, stat_json=args.stat_json)
+    fextract2numpy(fextract_filename=args.fextract_filename, output_prefix=args.output_prefix,
+                   num_train_rows=args.num_train_rows, min_dist2end=args.min_dist2end,
+                   allowed_strands=args.allowed_strands, allowed_ccs2genome_cigars=args.allowed_cigars,
+                   no_dump_remaining=args.no_dump_remaining, stat_json=args.stat_json)
     return 0
 
 
@@ -252,15 +258,20 @@ def get_parser():
     p = argparse.ArgumentParser(desc)
     p.add_argument("fextract_filename", help="fextract csv file")
     p.add_argument("output_prefix", help="Output prefix")
+    p.add_argument("--stat-json", default=None,
+                   help=("If set, standardize features using mean/stdev/min/max from stat.json. " +
+                         "otherwise, do NOT standarize features"))
     p.add_argument("--num-train-rows", type=int, default=1000000, help="Number of training rows")
     p.add_argument("--no-dump-remaining", default=False,
                    help="Do not dump remaining rows other than training",
                    action="store_true")
-    p.add_argument("--both-strands", default=False,
-                   help="Default=False, only use CCS forward mapped to genome, otherwise use both stranded CCS",
-                   action="store_true")
-    p.add_argument("--stat-json", default=None,
-                   help="standardize features using mean/stdev/min/max from stat.json")
+    p.add_argument("--min_dist2end", default=100,
+                   help="Ignore a base if its distance to either ends is less than min_dist2end bp")
+    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
+                   help=("Ignore a base if it maps to genome in a not-allowed strand. " +
+                         "F - forward strand, R - reverse strand, FR - both strands"))
+    p.add_argument("--allowed-cigars", default="IX=",
+                   help="Ignore a base if it maps to genome with a not-allowed cigar")
     return p
 
 

@@ -48,7 +48,8 @@ def add_predicted_cigars_and_write(in_csv, predicted_cigars, out_csv):
         for idx, r in enumerate(reader):
             predicted_cigar_idx = idx - 1
             if idx == 0:
-                writer.write(r.strip() + ',PredictedCigar,Predicted=,PredictedI,PredictedX,PredictedD\n')
+                writer.write(
+                    r.strip() + ',SamplingPredictedCigar,SamplingPredictedMatch,SamplingPredictedI,SamplingPredictedX,SamplingPredictedD\n')
             elif predicted_cigar_idx == len(predicted_cigars):
                 return
             elif predicted_cigar_idx > len(predicted_cigars):
@@ -58,7 +59,7 @@ def add_predicted_cigars_and_write(in_csv, predicted_cigars, out_csv):
                 o0, o1, o2, o3 = predicted_cigars[predicted_cigar_idx]
                 predicted_cigar = one_hot_to_cigar(predicted_cigars[predicted_cigar_idx])
                 writer.write(
-                    r.strip() + ',{oc},{o0},{o1},{o2},{o3}\n'.format(oc=predicted_cigar, o0=o0, o1=o1, o2=o2, o3=o3))
+                    r.strip() + ',{oc},{o0:.6f},{o1:.6f},{o2:.6f},{o3:.6f}\n'.format(oc=predicted_cigar, o0=o0, o1=o1, o2=o2, o3=o3))
 
 
 def run(args):

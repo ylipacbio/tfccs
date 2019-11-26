@@ -94,3 +94,14 @@ def cap_outlier_standardize(a, stat, N=4):
     """
     a = (np.asarray(a) - stat.mean) / stat.stdev   # standardize to center 0, mostly within 0, 1
     return np.clip(a, -N, N)
+
+
+def add_filter_args(p):
+    p.add_argument("--min-dist2end", default=100, type=int,
+                   help="Ignore a base if its distance to either ends is less than min_dist2end bp")
+    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
+                   help=("Ignore a base if it maps to genome in a not-allowed strand. " +
+                         "F - forward strand, R - reverse strand, FR - both strands"))
+    p.add_argument("--allowed-cigars", default="IX=",
+                   help="Ignore a base if it maps to genome with a not-allowed cigar")
+    return p

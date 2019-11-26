@@ -12,7 +12,7 @@ import csv
 import json
 import sys
 from tfccs.constants import NO_TRAIN_FEATURES, BASE_FEATURE_STAT_KEY
-from tfccs.utils import is_good_fextract_row
+from tfccs.utils import is_good_fextract_row, add_filter_args
 
 
 def compute_feature_stats(in_csv, out_json, min_dist2end, allowed_strands, allowed_ccs2genome_cigars):
@@ -67,6 +67,8 @@ def compute_feature_stats(in_csv, out_json, min_dist2end, allowed_strands, allow
 
 
 def run(args):
+    if not args.out_json.endswith('.stat.json'):
+        raise ValueError("Output stat json file must ends with .stat.json! {}".format(args.out_json))
     compute_feature_stats(in_csv=args.in_csv, out_json=args.out_json,
                           min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
                           allowed_ccs2genome_cigars=args.allowed_cigars)
@@ -79,14 +81,7 @@ def get_parser():
     p = argparse.ArgumentParser(desc)
     p.add_argument("in_csv", help="Input fextract csv file")
     p.add_argument("out_json", help="Output stat json file contain mean, stdev, min, max of trainable features")
-    p.add_argument("--min_dist2end", default=100,
-                   help="Ignore a base if its distance to either ends is less than min_dist2end bp")
-    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
-                   help=("Ignore a base if it maps to genome in a not-allowed strand. " +
-                         "F - forward strand, R - reverse strand, FR - both strands"))
-    p.add_argument("--allowed-cigars", default="IX=",
-                   help="Ignore a base if it maps to genome with a not-allowed cigar")
-    return p
+    return add_filter_args(p)
 
 
 def main(args=sys.argv[1:]):

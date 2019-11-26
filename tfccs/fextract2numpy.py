@@ -16,7 +16,7 @@ import csv
 import sys
 import json
 from tfccs.constants import NO_TRAIN_FEATURES, ORDERED_FEATURES_KEY, BASE_MAP_PROBABILITY_KEY
-from tfccs.utils import load_fextract_stat_json, is_good_fextract_row, cap_outlier_standardize
+from tfccs.utils import load_fextract_stat_json, is_good_fextract_row, cap_outlier_standardize, add_filter_args
 
 
 DUPLICATED_FEATURES = ["CCSBaseSNR"]  # duplication of SNR_A/SNR_C/SNR_G/SNR_T
@@ -190,7 +190,7 @@ def fextract2numpy(fextract_filename, output_prefix,
         writer.write(','.join(out_features))
 
     # Write ordered output features as json
-    out_ordered_features_json_filename = output_prefix + ".ordered_features.json"
+    out_ordered_features_json_filename = output_prefix + ".features.order.json"
     with open(out_ordered_features_json_filename, 'w') as writer:
         json.dump({ORDERED_FEATURES_KEY: out_features}, writer, sort_keys=True, indent=4)
     print("Created header file {}, time={}.".format(out_ordered_features_json_filename, t2-t1))
@@ -265,14 +265,7 @@ def get_parser():
     p.add_argument("--no-dump-remaining", default=False,
                    help="Do not dump remaining rows other than training",
                    action="store_true")
-    p.add_argument("--min_dist2end", default=100,
-                   help="Ignore a base if its distance to either ends is less than min_dist2end bp")
-    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
-                   help=("Ignore a base if it maps to genome in a not-allowed strand. " +
-                         "F - forward strand, R - reverse strand, FR - both strands"))
-    p.add_argument("--allowed-cigars", default="IX=",
-                   help="Ignore a base if it maps to genome with a not-allowed cigar")
-    return p
+    return add_filter_args(p)
 
 
 def main(args=sys.argv[1:]):

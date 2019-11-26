@@ -5,8 +5,7 @@ in_stat_json=/pbi/dept/secondary/siv/yli/jira/tak-59/multi-ccs2genome/m64002_190
 
 all: pylint
 	echo noop
-test:
-	fextract2numpy tests/data/tiny.fextract.csv out --stat-json ${in_stat_json}
+test: pylint cram utest
 dump-tiny:
 	python tfccs/fextract2numpy.py \
 		${fextract_csv} \
@@ -31,7 +30,7 @@ cram:
 		/mnt/software/c/cram/0.7/bin/cram \
 		${pwd}/tests/cram/*.t
 format:
-	@autopep8 --max-line-length=120 -ir -j0 tfccs/*.py
+	@autopep8 --max-line-length=120 -i -r -j0 tfccs/*.py
 push:
 	git push origin HEAD:master
 show:

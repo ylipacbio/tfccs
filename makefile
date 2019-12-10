@@ -30,7 +30,9 @@ cram:
 		/mnt/software/c/cram/0.7/bin/cram \
 		${pwd}/tests/cram/*.t
 format:
-	@autopep8 --max-line-length=120 -i -r -j0 tfccs/*.py
+	@for f in `ls tfccs/*.py`; do \
+		autopep8 --max-line-length=120 -i -r -j0 $$f; \
+	done
 push:
 	git push origin HEAD:master
 show:

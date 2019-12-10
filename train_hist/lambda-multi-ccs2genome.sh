@@ -1,8 +1,8 @@
 set -vex -o pipefail
 # This documented how I preprocess lambda digest dataset and train
 # a multinomial model regression to CCS to genome mapping.
-echo "Movie: m64002_190608_021007"
 movie=m64002_190608_021007
+echo "Movie: $movie"
 db_dir=/pbi/dept/consensus/ccsqv/data/Mule/lambda/bam/m64002_190608_021007/V2Bmark_SMS_Beta2_LambdaDigestEagI_SP2p1_DA011306_FCR_pkmid500_3260307/
 chunk_0_raw_csv=${db_dir}/fextract/chunk-0.fextract.csv
 out_dir=/pbi/dept/secondary/siv/yli/jira/tak-59/multi-ccs2genome

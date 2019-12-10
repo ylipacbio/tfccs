@@ -29,6 +29,7 @@ setup(
         'multinomial=tfccs.train:multinomial_main',
         'cnn=tfccs.train:cnn_main',
         'evalmodel=tfccs.evalmodel:main',
+        'sampling=tfccs.sampling:main',
     ]},
     install_requires=[],
     tests_require=['pytest'],

@@ -1,7 +1,14 @@
 import numpy as np
 import sys
 import json
+import csv
+import os.path as op
+import logging
 from tfccs.constants import BASE_FEATURE_STAT_KEY
+
+FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
+log = logging.getLogger(__name__)
 
 
 def load_fextract_npz(npz_filename):
@@ -17,7 +24,9 @@ def load_fextract_npz(npz_filename):
     return d['fextractinput'], d['arrowqv'], d['arrowqvbin8'], d['ccs2genome_cigars'], nrow, ncol
 
 
-def is_good_fextract_row(in_d, min_dist2end=100, allowed_strands="F", allowed_ccs2genome_cigars="I=X"):
+def is_good_fextract_row(in_d, min_dist2end=100, allowed_strands="F",
+                         allowed_ccs2genome_cigars="I=X",
+                         require_previous_is_deletion=False):
     """
     Return False if fextract row's
     1) ccs base is within 100bp end of CCS read
@@ -31,6 +40,8 @@ def is_good_fextract_row(in_d, min_dist2end=100, allowed_strands="F", allowed_cc
         return False
     if 'CCSToGenomeStrand' in in_d and in_d["CCSToGenomeStrand"] not in allowed_strands:
         return False
+    if require_previous_is_deletion:
+        return int(in_d['CcsToGenomePrevDeletions']) > 0
     return True
 
 
@@ -85,6 +96,27 @@ def load_fextract_stat_json(in_json):
     return out, set(features)
 
 
+def read_fextract(filename, is_good_fextract_row_f, return_index):
+    """
+        filename --- Input fextract.csv
+        is_good_fextract_row_f --- a function which tells if a row is good
+        return_index --- True: return indices of good rows in total rows.
+            header is not considered a row and the first row has an index of 0.
+    """
+#    reader = csv.DictReader(open(filename, 'r'), delimiter=',')
+#    for index, r in enumerate(reader):
+#        res = 'good' if is_good_fextract_row_f(r) else 'bad'
+#        log.debug("{index} -> {movie},{zmw},{cigar},{pd} is {res}".format(
+#            index=index, movie=r["Movie"], zmw=r["HoleNumber"],
+#            cigar=r["CCSToGenomeCigar"], pd=r["CcsToGenomePrevDeletions"], res=res))
+
+    reader = csv.DictReader(open(filename, 'r'), delimiter=',')
+    if not return_index:
+        return [r for r in reader if is_good_fextract_row_f(r)]
+    else:
+        return [idx for idx, r in enumerate(reader) if is_good_fextract_row_f(r)]
+
+
 def cap_outlier_standardize(a, stat, N=4):
     """
     To standardize an input array to mostly within [-1, 1] with center at 0.
@@ -94,6 +126,19 @@ def cap_outlier_standardize(a, stat, N=4):
     """
     a = (np.asarray(a) - stat.mean) / stat.stdev   # standardize to center 0, mostly within 0, 1
     return np.clip(a, -N, N)
+
+
+def read_rows_of_indices(filename, indices):
+    """
+    Read a txt/csv file, and return a list of rows whose indices are in indices.
+    """
+    indices = set(indices)
+    ret = []
+    with open(filename, 'r') as reader:
+        for index, row in enumerate(reader):
+            if index in indices:
+                ret.append(row)
+    return ret
 
 
 def add_filter_args(p):

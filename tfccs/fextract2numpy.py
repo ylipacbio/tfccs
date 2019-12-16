@@ -94,7 +94,6 @@ def convert_fextract_row(input_d):
     arrow_qv = int(input_d["ArrowQv"])
     ccs2genome_cigar = ccs2genome_cigar_counting_prev_dels(input_d['CCSToGenomeCigar'],
                                                            input_d['CcsToGenomePrevDeletions'])
-    # print("{}, {} -> {}".format(input_d['CCSToGenomeCigar'], input_d['CcsToGenomePrevDeletions'], ccs2genome_cigar))
     input_d.update(base_d)
     for feature in NO_TRAIN_FEATURES + ['CCSBase'] + DUPLICATED_FEATURES:
         input_d.pop(feature, None)
@@ -159,6 +158,9 @@ def fextract2numpy(fextract_filename, output_prefix,
 
     if len(dataset) == 0:
         raise ValueError("Output empty train data!")
+    if len(dataset) < num_train_rows:
+        raise ValueError(f"Collected {len(dataset)} training data points, less than required {num_train_rows}!")
+
     t1 = datetime.datetime.now()
     print("Loaded input {} rows, time={}.".format(len(dataset), t1-t0))
 

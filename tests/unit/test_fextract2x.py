@@ -59,7 +59,7 @@ def test_f2stat_f2npz():
     # Step 4: standarize in_csv to and convert to numpy ziped
     out_train_npz = op.join(out_dir, 'f2n.train.npz')
     out_header = op.join(out_dir, 'f2n.train.header')
-    fextract2numpy(fextract_filename=in_csv, output_prefix=op.join(out_dir, 'f2n'), num_train_rows=500,
+    fextract2numpy(fextract_filename=in_csv, output_prefix=op.join(out_dir, 'f2n'), num_train_rows=5,
                    min_dist2end=100, allowed_strands='FR', allowed_ccs2genome_cigars='IX=',
                    no_dump_remaining=True, stat_json=out_json)
     assert op.exists(out_train_npz)

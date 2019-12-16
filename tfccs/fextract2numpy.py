@@ -15,8 +15,14 @@ import argparse
 import csv
 import sys
 import json
+import logging
+import os.path as op
 from tfccs.constants import NO_TRAIN_FEATURES, ORDERED_FEATURES_KEY, BASE_MAP_PROBABILITY_KEY
 from tfccs.utils import load_fextract_stat_json, is_good_fextract_row, cap_outlier_standardize, add_filter_args
+
+FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
+log = logging.getLogger(__name__)
 
 
 DUPLICATED_FEATURES = ["CCSBaseSNR"]  # duplication of SNR_A/SNR_C/SNR_G/SNR_T
@@ -103,7 +109,10 @@ def convert_fextract_row(input_d):
 def fextract2numpy(fextract_filename, output_prefix,
                    min_dist2end, allowed_strands,
                    allowed_ccs2genome_cigars, num_train_rows,
-                   no_dump_remaining, stat_json):
+                   stat_json):
+    if num_train_rows == 0:
+        log.info("Will convert all qualified rows to output npz!")
+
     reader = csv.DictReader(open(fextract_filename, 'r'), delimiter=',')
     raw_reader = open(fextract_filename, 'r')
     header = next(raw_reader)  # Skip header
@@ -128,8 +137,6 @@ def fextract2numpy(fextract_filename, output_prefix,
     t0 = datetime.datetime.now()
     raw_train_writer = open(output_prefix + '.train.fextract.csv', 'w')
     raw_train_writer.write(header)
-    raw_test_writer = open(output_prefix + '.test.fextract.csv', 'w')
-    raw_test_writer.write(header)
     for r, raw_r in zip(reader, raw_reader):
         is_good = is_good_fextract_row(r, min_dist2end, allowed_strands, allowed_ccs2genome_cigars)
         if not is_good:
@@ -140,12 +147,10 @@ def fextract2numpy(fextract_filename, output_prefix,
         else:
             if out_features != list(out_r.keys()):
                 raise ValueError("Could not convert row {} to consistent output features!".format(r[0:50]))
-        if idx < num_train_rows:
+        if (num_train_rows == 0 or idx < num_train_rows):
             raw_train_writer.write(raw_r)
-        elif no_dump_remaining:
-            break
         else:
-            raw_test_writer.write(raw_r)
+            break
         new_r = np.fromiter(out_r.values(), dtype=np.float32)
         dataset.append(new_r)
         arrow_qvs.append(arrow_qv)
@@ -154,7 +159,6 @@ def fextract2numpy(fextract_filename, output_prefix,
             print("Processing {} rows".format(idx))
         idx += 1
     raw_train_writer.close()
-    raw_test_writer.close()
 
     if len(dataset) == 0:
         raise ValueError("Output empty train data!")
@@ -206,14 +210,9 @@ def fextract2numpy(fextract_filename, output_prefix,
                             ccs2genome_cigars=ccs2genome_cigars[start_row:end_row])
 
     out_train_filename = output_prefix + ".train.npz"
-    out_test_filename = output_prefix + ".test.npz"
     zipsave(out_train_filename, 0, num_train_rows)
     t3 = datetime.datetime.now()
     print("Dumped {} rows of training data, time={}".format(num_train_rows, t3-t2))
-    if len(dataset) > num_train_rows and not no_dump_remaining:
-        zipsave(out_test_filename, num_train_rows, len(dataset))
-        t4 = datetime.datetime.now()
-        print("Dumped {} rows of test data, time={} ".format(len(dataset) - num_train_rows, t4-t3))
 
     def base_map_probability(cc2genome_cigars, start_row, end_row):
         # Return fraction of bases in 'I=XD' classes
@@ -248,25 +247,20 @@ def run(args):
     fextract2numpy(fextract_filename=args.fextract_filename, output_prefix=args.output_prefix,
                    num_train_rows=args.num_train_rows, min_dist2end=args.min_dist2end,
                    allowed_strands=args.allowed_strands, allowed_ccs2genome_cigars=args.allowed_cigars,
-                   no_dump_remaining=args.no_dump_remaining, stat_json=args.stat_json)
+                   stat_json=args.stat_json)
     return 0
 
 
 def get_parser():
     """Set up and return argument parser."""
-    desc = """Convert fextract csv file to zipped numpy files, including
-    ${output_prefix}.train.npz - num_train_rows rows
-    ${output_prefix}.test.npz - others\n"""
+    desc = """Convert fextract csv file to zipped numpy file - ${output_prefix}.train.npz with N rows\n"""
     p = argparse.ArgumentParser(desc)
     p.add_argument("fextract_filename", help="fextract csv file")
     p.add_argument("output_prefix", help="Output prefix")
     p.add_argument("--stat-json", default=None,
                    help=("If set, standardize features using mean/stdev/min/max from stat.json. " +
                          "otherwise, do NOT standarize features"))
-    p.add_argument("--num-train-rows", type=int, default=1000000, help="Number of training rows")
-    p.add_argument("--no-dump-remaining", default=False,
-                   help="Do not dump remaining rows other than training",
-                   action="store_true")
+    p.add_argument("--num-train-rows", type=int, default=0, help="Number of training rows, 0 means no limitation")
     return add_filter_args(p)
 
 

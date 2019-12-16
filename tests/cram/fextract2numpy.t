@@ -2,7 +2,6 @@
   $ PYBIN=$TESTDIR/../../tfccs/
   $ IN=$DATADIR/input.fextract.csv
   $ OUT_TRAIN=$CRAMTMP/output.train.npz
-  $ OUT_TEST=$CRAMTMP/output.test.npz
 
 Test1: fextract2numpy exists
   $ fextract2numpy --help  1>&2 >/dev/null && echo $?
@@ -13,14 +12,12 @@ Test2: run a small data
   0
   $ ls ${OUT_TRAIN} > /dev/null && echo $?
   0
-  $ ls ${OUT_TEST} > /dev/null && echo $?
-  0
 
 Test3: emit stat-json
   $ DATADIR=$TESTDIR/../data/
   $ STAT_JSON=${DATADIR}/fextract.stat.json
   $ OUT_PREFIX=$CRAMTMP/test3_out
-  $ fextract2numpy ${IN} ${OUT_PREFIX} --stat-json ${STAT_JSON} --num-train-rows 5 --no-dump-remaining 1>&2 >/dev/null && echo $?
+  $ fextract2numpy ${IN} ${OUT_PREFIX} --stat-json ${STAT_JSON} --num-train-rows 5 1>&2 >/dev/null && echo $?
   0
 
   $ ls ${OUT_PREFIX}.train.npz > /dev/null && echo $?

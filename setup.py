@@ -29,6 +29,7 @@ setup(
         'multinomial=tfccs.train:multinomial_main',
         'cnn=tfccs.train:cnn_main',
         'evalmodel=tfccs.evalmodel:main',
+        'merge-base-map-prob=tfccs.merge_base_map_prob:main',
     ]},
     install_requires=[],
     tests_require=['pytest'],

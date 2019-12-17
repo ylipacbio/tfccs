@@ -4,7 +4,7 @@ import sys
 import os
 import os.path as op
 from tfccs.utils import load_fextract_npz
-from tfccs.models import *
+from tfccs.models import multinomial_model_0, multinomial_model_1
 import argparse
 
 
@@ -36,7 +36,8 @@ def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compil
 
     # Fit and call back
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
-    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=[cp_callback])
+    earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='accuracy', min_delta=0.0001, patience=10)
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=[cp_callback, earlystop_callback])
 
     # Evaluate
     evl = model.evaluate(x_train, y_train)

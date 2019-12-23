@@ -1,4 +1,10 @@
 import tensorflow as tf
+import logging
+import os.path as op
+
+FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
+log = logging.getLogger(__name__)
 
 
 def multinomial_model_0(x_ncol, y_ncol):

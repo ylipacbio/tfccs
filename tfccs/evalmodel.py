@@ -73,7 +73,7 @@ def run(args):
     if not args.out_csv.endswith('.csv'):
         raise ValueError("Output fextact csv file {} must ends with csv!".format(args.out_csv))
 
-    x_test, x_arrowqv, _, y_test, nrow, ncol = load_fextract_npz(args.in_fextract_npz)
+    x_test, x_arrowqv, _, y_test, _, _ = load_fextract_npz(args.in_fextract_npz)
     npz_csv_must_match(y_test, args.in_fextract_csv)
     predicted_cigars = eval_model(args.in_model_dir, x_test, y_test)
     add_predicted_cigars_and_write(args.in_fextract_csv, predicted_cigars, args.out_csv)

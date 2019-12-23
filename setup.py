@@ -30,6 +30,7 @@ setup(
         'cnn=tfccs.train:cnn_main',
         'evalmodel=tfccs.evalmodel:main',
         'merge-base-map-prob=tfccs.merge_base_map_prob:main',
+        'qvpipe=tfccs.qvpipe:main',
     ]},
     install_requires=[],
     tests_require=['pytest'],

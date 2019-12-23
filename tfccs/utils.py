@@ -4,11 +4,19 @@ import json
 import csv
 import os.path as op
 import logging
+import subprocess
 from tfccs.constants import BASE_FEATURE_STAT_KEY
 
 FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
 log = logging.getLogger(__name__)
+
+
+def execute(cmd):
+    print("CMD: " + cmd)
+    ret = subprocess.call(cmd, shell=True)
+    if ret != 0:
+        raise RuntimeError(f"CMD failed: {cmd}, ret={ret}!")
 
 
 def load_fextract_npz(npz_filename):
@@ -150,3 +158,12 @@ def add_filter_args(p):
     p.add_argument("--allowed-cigars", default="IX=",
                    help="Ignore a base if it maps to genome with a not-allowed cigar")
     return p
+
+
+def write_to_script(cmds, filename):
+    if op.exists(filename):
+        log.info(f"Overriding {filename}!")
+    with open(filename, 'w') as writer:
+        writer.write('set -vex -o pipefail\n')
+        for cmd in cmds:
+            writer.write(cmd + '\n')

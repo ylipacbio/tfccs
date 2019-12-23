@@ -1,0 +1,17 @@
+{
+    "Name": "NameOfThisModel",
+    "Input": {"FextractCsv": "/pbi/dept/secondary/siv/testdata/ccsqv/test-tfccs/fextract.csv",  "Ccs2GenomeBam": "/pbi/dept/secondary/siv/testdata/ccsqv/test-tfccs/ccs2genome.bam"},
+    "Output": {"ModelDirectory": "tmp/model", "BenchmarkDirectory": "tmp/benchmark"},
+    "TensorflowParameters": {
+        "BatchSize": 50,
+        "Epochs": 20,
+        "EarlyStoppingPatience": 4,
+        "Optimizer": "adam",
+        "NumTrainRows": 100,
+        "Layers": [
+            {"LayerType":"Dense", "NodeSize": 64, "Activation": "relu", "KernelInitializer": "random_uniform", "KernelRegularizer": "l2", "RegularizerWeight": 0.001},
+            {"LayerType":"Dense", "NodeSize": 32, "Activation": "sigmoid"},
+            {"LayerType":"Dense", "NodeSize": -1, "Activation": "softmax"}]
+    },
+    "ValidationData": {"FextractCsv": ""}
+}

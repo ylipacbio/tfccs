@@ -27,7 +27,7 @@ def merge_base_map_prob_json(sampling_json, population_json, out_json):
     if BASE_MAP_PROBABILITY_KEY not in sampling_d:
         raise ValueError(f"{BASE_MAP_PROBABILITY_KEY} does not exists as key in {sampling_json}")
     if 'Sampling' not in sampling_d[BASE_MAP_PROBABILITY_KEY]:
-        raise ValueError(f"'Sampling' does not exists as key under {BASE_MAP_PROBABILITY_KE} in {sampling_json}")
+        raise ValueError(f"'Sampling' does not exists as key under {BASE_MAP_PROBABILITY_KEY} in {sampling_json}")
     for key in ['SequenceMatch', 'Insertion', 'Substitution', 'PreviousIsDeletion']:
         if key not in sampling_d[BASE_MAP_PROBABILITY_KEY]['Sampling']:
             raise ValueError(f"{key} does not exist in {sampling_json}")
@@ -35,7 +35,7 @@ def merge_base_map_prob_json(sampling_json, population_json, out_json):
     if BASE_MAP_PROBABILITY_KEY not in population_d:
         raise ValueError(f"{BASE_MAP_PROBABILITY_KEY} does not exists as key in {population_json}")
     if 'Population' not in population_d[BASE_MAP_PROBABILITY_KEY]:
-        raise ValueError(f"'Population' does not exists as key under {BASE_MAP_PROBABILITY_KE} in {population_json}")
+        raise ValueError(f"'Population' does not exists as key under {BASE_MAP_PROBABILITY_KEY} in {population_json}")
     for key in ['SequenceMatch', 'Insertion', 'Substitution', 'PreviousIsDeletion']:
         if key not in population_d[BASE_MAP_PROBABILITY_KEY]['Population']:
             raise ValueError(f"{key} does not exist in {population_json}")

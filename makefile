@@ -21,7 +21,7 @@ dump-full:
 build:
 	pip install --edit .
 utest:
-	pytest -v -s tests/unit/test_utils.py tests/unit/test_fextract2x.py
+	pytest -v -s tests/unit/test_utils.py tests/unit/test*.py
 pylint:
 	pylint --errors-only tfccs/*.py
 pwd=${shell pwd}

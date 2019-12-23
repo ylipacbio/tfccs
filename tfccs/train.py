@@ -3,22 +3,33 @@ import tensorflow as tf
 import sys
 import os
 import os.path as op
+import logging
+import argparse
 from tfccs.utils import load_fextract_npz
 from tfccs.models import multinomial_model_0, multinomial_model_1
-import argparse
 
 
-def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compile_model_func):
+FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
+log = logging.getLogger(__name__)
+
+
+DEFAULT_EARLY_STOP_CALL_BACK = tf.keras.callbacks.EarlyStopping(monitor='accuracy',
+                                                                min_delta=0.0001, patience=10)
+
+
+def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compile_model_func,
+          early_stop_callback=DEFAULT_EARLY_STOP_CALL_BACK):
     """
     x_train - normalized standardized features
     y_train - outputs
     """
     if not op.exists(out_dir):
         os.mkdir(out_dir)
-    print("x_train shape: " + str(x_train.shape))
-    print("y_train shape: " + str(y_train.shape))
-    print('head(x_train, 1): ' + str(x_train[0]))
-    print('head(y_train, 1): ' + str(y_train[0]))
+    log.info("x_train shape: " + str(x_train.shape))
+    log.info("y_train shape: " + str(y_train.shape))
+    log.info('head(x_train, 1): ' + str(x_train[0]))
+    log.info('head(y_train, 1): ' + str(y_train[0]))
     x_nrow = x_train.shape[0]
     x_ncol = 1 if len(x_train.shape) == 1 else x_train.shape[1]
     y_nrow = y_train.shape[0]
@@ -29,19 +40,21 @@ def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compil
     model = create_and_compile_model_func(x_ncol=x_ncol, y_ncol=y_ncol)
 
     summary = model.summary()
-    print(summary)
+    log.info(summary)
     model_png = op.join(out_dir, '{}.model.png'.format(name))
     checkpoint_file = op.join(out_dir, "{}.ckpt".format(name))
     tf.keras.utils.plot_model(model, to_file=model_png)
 
-    # Fit and call back
+    # Create call backs
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
-    earlystop_callback = tf.keras.callbacks.EarlyStopping(monitor='accuracy', min_delta=0.0001, patience=10)
-    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=[cp_callback, earlystop_callback])
+    callbacks = [cp_callback, early_stop_callback] if early_stop_callback is not None else [cp_callback]
+
+    # Fit
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=callbacks)
 
     # Evaluate
     evl = model.evaluate(x_train, y_train)
-    print(evl)
+    log.info(evl)
     tf.saved_model.save(model, out_dir)
     return model, evl
 
@@ -52,7 +65,7 @@ def train_ccs2genome(args, create_and_compile_model_func):
     name = args.name
     batch_size = args.batch_size
     epochs = args.epochs
-    fextract_input, _, _, ccs2genome_cigars, nrow, ncol = load_fextract_npz(in_npz)
+    fextract_input, _, _, ccs2genome_cigars, _, _ = load_fextract_npz(in_npz)
     train(fextract_input, ccs2genome_cigars, out_dir=out_dir, name=name, batch_size=batch_size,
           epochs=epochs, create_and_compile_model_func=create_and_compile_model_func)
 
@@ -83,7 +96,7 @@ def multinomial_main(args=sys.argv[1:]):
 def cnn_main(args=sys.argv[1:]):
     """cnn main"""
     args = get_train_parser().parse_args(args)
-    train_ccs2genome(args, create_and_compile_model_func=cnn_model)
+    train_ccs2genome(args, create_and_compile_model_func=None)
     return 0
 
 

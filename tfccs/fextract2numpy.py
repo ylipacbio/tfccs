@@ -162,8 +162,11 @@ def fextract2numpy(fextract_filename, output_prefix,
 
     if len(dataset) == 0:
         raise ValueError("Output empty train data!")
-    if len(dataset) < num_train_rows:
+    if num_train_rows > 0 and len(dataset) < num_train_rows:
         raise ValueError(f"Collected {len(dataset)} training data points, less than required {num_train_rows}!")
+    assert len(arrow_qvs) == len(ccs2genome_cigars)
+    if num_train_rows == 0:
+        num_train_rows = len(arrow_qvs)
 
     t1 = datetime.datetime.now()
     print("Loaded input {} rows, time={}.".format(len(dataset), t1-t0))

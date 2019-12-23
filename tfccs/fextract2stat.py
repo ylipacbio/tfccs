@@ -15,7 +15,7 @@ from tfccs.constants import NO_TRAIN_FEATURES, BASE_FEATURE_STAT_KEY
 from tfccs.utils import is_good_fextract_row, add_filter_args
 
 
-def compute_feature_stats(in_csv, out_json, min_dist2end, allowed_strands, allowed_ccs2genome_cigars):
+def compute_feature_stats(in_csv, out_stat_json, min_dist2end, allowed_strands, allowed_ccs2genome_cigars):
     reader = csv.DictReader(open(in_csv, 'r'), delimiter=',')
     dataset = []
     t0 = datetime.datetime.now()
@@ -61,15 +61,15 @@ def compute_feature_stats(in_csv, out_json, min_dist2end, allowed_strands, allow
             ret.append(d)
         return {BASE_FEATURE_STAT_KEY: ret}
 
-    print("Dump mean, stdev, min, max of trainable variables to {}.".format(out_json))
-    with open(out_json, 'w') as writer:
+    print("Dump mean, stdev, min, max of trainable variables to {}.".format(out_stat_json))
+    with open(out_stat_json, 'w') as writer:
         json.dump(save_format_2(), writer, indent=4, sort_keys=True)
 
 
 def run(args):
-    if not args.out_json.endswith('.stat.json'):
-        raise ValueError("Output stat json file must ends with .stat.json! {}".format(args.out_json))
-    compute_feature_stats(in_csv=args.in_csv, out_json=args.out_json,
+    if not args.out_stat_json.endswith('.stat.json'):
+        raise ValueError("Output stat json file must ends with .stat.json! {}".format(args.out_stat_json))
+    compute_feature_stats(in_csv=args.in_csv, out_stat_json=args.out_stat_json,
                           min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
                           allowed_ccs2genome_cigars=args.allowed_cigars)
     return 0
@@ -80,7 +80,7 @@ def get_parser():
     desc = """Compute mean, stdev, min, max of trainable fextract features and save to output file."""
     p = argparse.ArgumentParser(desc)
     p.add_argument("in_csv", help="Input fextract csv file")
-    p.add_argument("out_json", help="Output stat json file contain mean, stdev, min, max of trainable features")
+    p.add_argument("out_stat_json", help="Output stat json file contain mean, stdev, min, max of trainable features")
     return add_filter_args(p)
 
 

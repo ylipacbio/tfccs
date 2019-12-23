@@ -39,7 +39,7 @@ def test_f2stat_f2npz():
 
     # Step 2: compute stats and dump stat to json
     out_json = op.join(out_dir, 'out.stat.json')
-    compute_feature_stats(in_csv=in_csv, out_json=out_json,
+    compute_feature_stats(in_csv=in_csv, out_stat_json=out_json,
                           min_dist2end=100, allowed_strands='FR', allowed_ccs2genome_cigars='IX=')
 
     # Step 3: read stat from json and compare with expected

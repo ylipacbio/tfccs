@@ -6,7 +6,8 @@ import os.path as op
 import json
 import argparse
 import logging
-from tfccs.utils import execute, write_to_script, load_fextract_npz
+from tfccs.utils import execute, write_to_script, load_fextract_npz, mkdir, add_filter_args
+from tfccs.constants import MIN_DIST2END, ALLOWED_STRANDS, ALLOWED_CIGARS
 
 FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
@@ -240,7 +241,9 @@ def generate_config_json(args):
                                early_stop_patience=default_early_stop_patience, layers=default_layers,
                                num_train_rows=default_num_train_rows, optimizer=default_optimizer)
     config_obj = CcsQvConfig(name=name, in_fextract_csv="FIXME", in_ccs2genome_bam="FIXME", out_model_dir="FIXME",
-                             out_benchmark_dir="FIXME", param_config=param_config, validation_fextract_csv="FIXME")
+                             out_benchmark_dir="FIXME", param_config=param_config, validation_fextract_csv="FIXME",
+                             min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
+                             allowed_cigars=args.allowed_cigars)
     config_obj.save_json(out_json)
 
 
@@ -248,7 +251,8 @@ class CcsQvConfig(object):
 
     def __init__(self, name, in_fextract_csv, in_ccs2genome_bam,
                  param_config, out_model_dir, out_benchmark_dir,
-                 validation_fextract_csv=None):
+                 validation_fextract_csv=None, min_dist2end=MIN_DIST2END,
+                 allowed_strands=ALLOWED_STRANDS, allowed_cigars=ALLOWED_CIGARS):
         self.name = name
         self.in_fextract_csv = in_fextract_csv
         self.in_ccs2genome_bam = in_ccs2genome_bam
@@ -256,10 +260,13 @@ class CcsQvConfig(object):
         self.out_benchmark_dir = out_benchmark_dir
         self.param_config = param_config
         self.validation_fextract_csv = validation_fextract_csv
+        self.min_dist2end = int(min_dist2end)
+        self.allowed_strands = allowed_strands
+        self.allowed_cigars = allowed_cigars
 
     def mkdir(self):
-        execute(f"mkdir -p {self.out_model_dir}")
-        execute(f"mkdir -p {self.out_benchmark_dir}")
+        mkdir(self.out_model_dir)
+        mkdir(self.out_benchmark_dir)
 
     def assert_input_exist(self):
         input_files = [self.in_fextract_csv, self.in_ccs2genome_bam]
@@ -300,12 +307,27 @@ class CcsQvConfig(object):
         if "ValidationData" in d and "FextractCsv" in d["ValidationData"]:
             if d["ValidationData"]["FextractCsv"].strip():
                 validation_fextract_csv = d["ValidationData"]["FextractCsv"]
+
+        min_dist2end = MIN_DIST2END
+        allowed_strands = ALLOWED_STRANDS
+        allowed_cigars = ALLOWED_CIGARS
+        if 'SAMPLING' in d:
+            sampling_config = d['SAMPLING']
+            if 'MIN_DIST2END' in sampling_config:
+                min_dist2end = sampling_config['MIN_DIST2END']
+            if 'ALLOWED_STRANDS' in sampling_config:
+                allowed_strands = sampling_config['ALLOWED_STRANDS']
+            if 'ALLOWED_CIGARS' in sampling_config:
+                allowed_cigars = sampling_config['ALLOWED_CIGARS']
         return CcsQvConfig(name=name, in_fextract_csv=in_fextract_csv,
                            in_ccs2genome_bam=in_ccs2genome_bam,
                            param_config=param_config,
                            out_model_dir=out_model_dir,
                            out_benchmark_dir=out_benchmark_dir,
-                           validation_fextract_csv=validation_fextract_csv)
+                           validation_fextract_csv=validation_fextract_csv,
+                           min_dist2end=min_dist2end,
+                           allowed_strands=allowed_strands,
+                           allowed_cigars=allowed_cigars)
 
     def to_dict(self):
         d = {
@@ -316,6 +338,10 @@ class CcsQvConfig(object):
         }
         if self.validation_fextract_csv is not None:
             d["ValidationData"] = {"FextractCsv": f"{self.validation_fextract_csv}"}
+        sampling_config = {'MIN_DIST2END': self.min_dist2end,
+                           'ALLOWED_STRANDS': self.allowed_strands,
+                           'ALLOWED_CIGARS': self.allowed_cigars}
+        d['SAMPLING'] = sampling_config
         return d
 
     def save_json(self, out_json):
@@ -372,7 +398,7 @@ class CcsQvConfig(object):
 
     def create_prev_train_script(self):
         def gen_stat_cmd(in_fextract_csv, out_stat_json):
-            return f'fextract2stat {in_fextract_csv} {out_stat_json}'
+            return f'fextract2stat {in_fextract_csv} {out_stat_json} --min-dist2end {self.min_dist2end} --allowed-strands {self.allowed_strands} --allowed-cigars {self.allowed_cigars}'
 
         def gen_npz_cmd(in_fextract_csv, in_stat_json, out_prefix, out_order_json, num_train_rows):
             c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json} --num-train-rows {num_train_rows}'
@@ -483,6 +509,7 @@ def get_ccsqv_pipeline_parser():
     gen_desc = "gen: generate a json which specifies default configurations for CCS Qv model."
     gen_subparser = subparsers.add_parser('gen', help=gen_desc)
     gen_subparser.add_argument('out_json', help=config_json_desc)
+    add_filter_args(gen_subparser)
     gen_subparser.set_defaults(func=generate_config_json)
 
     run_desc = "run: train a CCS QV model using tensorflow and benchmark performance at ReadQv metrics."

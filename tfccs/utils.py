@@ -5,7 +5,7 @@ import csv
 import os.path as op
 import logging
 import subprocess
-from tfccs.constants import BASE_FEATURE_STAT_KEY
+from tfccs.constants import BASE_FEATURE_STAT_KEY, MIN_DIST2END, ALLOWED_STRANDS, ALLOWED_CIGARS
 
 FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
@@ -32,8 +32,8 @@ def load_fextract_npz(npz_filename):
     return d['fextractinput'], d['arrowqv'], d['arrowqvbin8'], d['ccs2genome_cigars'], nrow, ncol
 
 
-def is_good_fextract_row(in_d, min_dist2end=100, allowed_strands="F",
-                         allowed_ccs2genome_cigars="I=X",
+def is_good_fextract_row(in_d, min_dist2end=MIN_DIST2END, allowed_strands=ALLOWED_STRANDS,
+                         allowed_ccs2genome_cigars=ALLOWED_CIGARS,
                          require_previous_is_deletion=False):
     """
     Return False if fextract row's
@@ -150,12 +150,12 @@ def read_rows_of_indices(filename, indices):
 
 
 def add_filter_args(p):
-    p.add_argument("--min-dist2end", default=100, type=int,
+    p.add_argument("--min-dist2end", default=MIN_DIST2END, type=int,
                    help="Ignore a base if its distance to either ends is less than min_dist2end bp")
-    p.add_argument("--allowed-strands", default="F", choices=["F", "R", "FR"],
+    p.add_argument("--allowed-strands", default=MIN_DIST2END, choices=["F", "R", "FR"],
                    help=("Ignore a base if it maps to genome in a not-allowed strand. " +
                          "F - forward strand, R - reverse strand, FR - both strands"))
-    p.add_argument("--allowed-cigars", default="IX=",
+    p.add_argument("--allowed-cigars", default=ALLOWED_CIGARS,
                    help="Ignore a base if it maps to genome with a not-allowed cigar")
     return p
 
@@ -167,3 +167,7 @@ def write_to_script(cmds, filename):
         writer.write('set -vex -o pipefail\n')
         for cmd in cmds:
             writer.write(cmd + '\n')
+
+
+def mkdir(path):
+    execute(f"mkdir -p {path}")

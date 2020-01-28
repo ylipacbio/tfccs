@@ -152,7 +152,7 @@ def read_rows_of_indices(filename, indices):
 def add_filter_args(p):
     p.add_argument("--min-dist2end", default=MIN_DIST2END, type=int,
                    help="Ignore a base if its distance to either ends is less than min_dist2end bp")
-    p.add_argument("--allowed-strands", default=MIN_DIST2END, choices=["F", "R", "FR"],
+    p.add_argument("--allowed-strands", default=ALLOWED_STRANDS, choices=["F", "R", "FR"],
                    help=("Ignore a base if it maps to genome in a not-allowed strand. " +
                          "F - forward strand, R - reverse strand, FR - both strands"))
     p.add_argument("--allowed-cigars", default=ALLOWED_CIGARS,

@@ -406,7 +406,8 @@ class CcsQvConfig(object):
             return c0 + '\n' + c1
 
         def qvtools_cmd(ccs2genome_bam, out_baseqv_csv):
-            return f'qvtools {ccs2genome_bam} {out_baseqv_csv} -j {NPROC} --forward-only '
+            forward_only = "--forward-only" if self.allowed_strands == "F" else ""
+            return f'qvtools {ccs2genome_bam} {out_baseqv_csv} -j {NPROC} {forward_only}'
 
         def population_prob_cmd(in_baseqv_csv, out_population_base_map_prob_json):
             rscript_path = '/mnt/software/c/ccsqv/master/bin/R/base_map_prob_json_from_baseqv_csv.R'

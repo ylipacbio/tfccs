@@ -171,3 +171,32 @@ def write_to_script(cmds, filename):
 
 def mkdir(path):
     execute(f"mkdir -p {path}")
+
+
+def encode_kmer(kmer):
+    GAP = '-'
+    # encode ACGT^L as 0,1,2,3 * 4^k
+    # -> left=mostSignif ... right=leastSignif ->
+    benc = {"A": 0, "C": 1, "G": 2, "T": 3, GAP: 4}
+    # A -> 0
+    # AA -> 5
+    # AAA -> 25
+    l = len(kmer)
+    if l > 10:
+        raise ValueError("Not support encode of kmer > 10")
+    enc = 0
+    base = 1
+    for i in range(l):
+        enc += base * benc[kmer[i]]
+        base *= 5
+    return enc
+
+
+def decode_kmer(enc, kmlen):
+    GAP = '-'
+    bdec = {0: "A", 1: "C", 2: "G", 3: "T", 4: GAP}
+    dec = []
+    for i in range(kmlen):
+        dec.append(bdec[(enc % 5)])
+        enc = enc // 5
+    return("".join(dec))

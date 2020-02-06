@@ -1,4 +1,5 @@
-from tfccs.utils import load_fextract_stat_json, cap_outlier_standardize, FextractStat
+from tfccs.utils import (load_fextract_stat_json, cap_outlier_standardize, FextractStat,
+encode_kmer, decode_kmer)
 import os.path as op
 import numpy as np
 
@@ -22,3 +23,13 @@ def test_cap_outlier_standardize():
     # FextractStat('F1', 2, 1, 0, 4) - mean=2, std=1, min=0, max=4
     out = cap_outlier_standardize([0, 1, 2, 3, 7], FextractStat('F1', 2, 1, 0, 4), 3)
     assert list(out) == [-2.0, -1.0, 0., 1.0, 3.0]
+
+def test_encode_kmer():
+    for c0 in 'ATGC-':
+        for c1 in 'ATGC-':
+            for c2 in 'ATGC-':
+                for c3 in 'ATGC-':
+                    s = ''.join([c0, c1, c2, c3])
+                    encode_out = encode_kmer(s)
+                    decode_out = decode_kmer(encode_out, 4)
+                    assert decode_out == s

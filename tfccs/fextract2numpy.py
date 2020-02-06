@@ -55,6 +55,15 @@ def one_hot_base(base):
             "CCSBaseT": 1 if base in 'Tt' else 0}
 
 
+def one_hot_base_or_gap(base_or_gap, prefix):
+    assert base_or_gap in 'ACGTacgt-'
+    return {prefix + "A": 1 if base_or_gap in 'Aa' else 0,
+            prefix + "C": 1 if base_or_gap in 'Cc' else 0,
+            prefix + "G": 1 if base_or_gap in 'Gg' else 0,
+            prefix + "T": 1 if base_or_gap in 'Tt' else 0,
+            prefix + "GAP": 1 if base_or_gap == '-' else 0}
+
+
 def cigar_index_in_one_hot(cigar):
     # Must match one_hot_to_cigar
     d = {'=': 0, 'I': 1, 'X': 2, 'D': 3}
@@ -94,14 +103,25 @@ def convert_fextract_row(input_d):
     """
     1) Remove NO_TRAIN_FEATURES and DUPLICATED_FEATURES
     2) One-hot encode CCSBase, aka replace 'CCSBase' by 'CCSBaseA', 'CCSBaseC', 'CCSBaseG', 'CCSBaseT'
+       Similarly, encode PrevBases and NextBases
     3) Merge 'CCSToGenomeCigar' and 'CcsToGenomePrevDeletions', and report as one-hot encode
     """
     base_d = one_hot_base(input_d['CCSBase'])
+    # Input PrevBases has two bases, '{PrevBase1}{PrevBase0}'
+    # Input NextBases has two bases, '{NextBase0}{NextBase1}'
+    # CCS read local sequence context: PrevBase1, PrevBase0, CCSBase, NextBase0, NextBase1
+    if 'PrevBases' in input_d:
+        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][1], "PrevBase0"))
+        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][0], "PrevBase1"))
+    if 'NextBases' in input_d:
+        base_d.update(one_hot_base_or_gap(input_d['NextBases'][0], "NextBase0"))
+        base_d.update(one_hot_base_or_gap(input_d['NextBases'][1], "NextBase1"))
+
     arrow_qv = int(input_d["ArrowQv"])
     ccs2genome_cigar = ccs2genome_cigar_counting_prev_dels(input_d['CCSToGenomeCigar'],
                                                            input_d['CcsToGenomePrevDeletions'])
     input_d.update(base_d)
-    for feature in NO_TRAIN_FEATURES + ['CCSBase'] + DUPLICATED_FEATURES:
+    for feature in NO_TRAIN_FEATURES + ['CCSBase', 'PrevBases', 'NextBases'] + DUPLICATED_FEATURES:
         input_d.pop(feature, None)
     return input_d, arrow_qv, ccs2genome_cigar
 
@@ -122,7 +142,7 @@ def fextract2numpy(fextract_filename, output_prefix,
     stat_d, stat_features = None, None
     if stat_json is not None:
         stat_d, stat_features = load_fextract_stat_json(stat_json)
-        trainable_features = set(features).difference(set(NO_TRAIN_FEATURES + ['CCSBase']))
+        trainable_features = set(features).difference(set(NO_TRAIN_FEATURES + ['CCSBase', 'PrevBases', 'NextBases']))
         if trainable_features != stat_features:
             raise ValueError("Features in csv and stat.json differ!\n" +
                              "Unique features in csv: {}\nUnique features in stat.json: {}\n".format(

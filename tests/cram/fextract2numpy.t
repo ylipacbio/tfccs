@@ -173,3 +173,32 @@ Test3: emit stat-json
           "CCSBaseT"
       ]
   } (no-eol)
+
+Test4: run a small data with Sequence Context: PrevBases and NextBases
+  $ IN=$DATADIR/fextract2numpy/input.fextract.seqcontext.csv
+  $ fextract2numpy ${IN} ${CRAMTMP}/output --num-train-rows 3 1>&2 >/dev/null && echo $?
+  0
+  $ ls ${OUT_TRAIN} > /dev/null && echo $?
+  0
+  $ cat ${CRAMTMP}/output*features.order.json | grep "PrevBase" | sed 's/ //g'
+  "PrevBase0A",
+  "PrevBase0C",
+  "PrevBase0G",
+  "PrevBase0T",
+  "PrevBase0GAP",
+  "PrevBase1A",
+  "PrevBase1C",
+  "PrevBase1G",
+  "PrevBase1T",
+  "PrevBase1GAP",
+  $ cat ${CRAMTMP}/output*features.order.json | grep "NextBase" | sed 's/ //g'
+  "NextBase0A",
+  "NextBase0C",
+  "NextBase0G",
+  "NextBase0T",
+  "NextBase0GAP",
+  "NextBase1A",
+  "NextBase1C",
+  "NextBase1G",
+  "NextBase1T",
+  "NextBase1GAP"

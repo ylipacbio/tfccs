@@ -19,7 +19,7 @@ def compute_feature_stats(in_csv, out_stat_json, min_dist2end, allowed_strands, 
     reader = csv.DictReader(open(in_csv, 'r'), delimiter=',')
     dataset = []
     t0 = datetime.datetime.now()
-    features = sorted(set(reader.fieldnames).difference(NO_TRAIN_FEATURES + ["CCSBase"]))
+    features = sorted(set(reader.fieldnames).difference(NO_TRAIN_FEATURES + ["CCSBase", "PrevBases", "NextBases"]))
     for idx, r in enumerate(reader):
         is_good = is_good_fextract_row(r, min_dist2end=min_dist2end,
                                        allowed_strands=allowed_strands,

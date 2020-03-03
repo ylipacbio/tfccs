@@ -28,3 +28,8 @@ Test3: qvpipe run
   0
   $ ls tmp/model/features.order.json >/dev/null && echo $?
   0
+  $ cat tmp/model/hg2.benchmark.sh | grep input=
+  input=/pbi/dept/consensus/ccsqv/data/Mule/hg2/one_percent.hg2.Grch38.ccs2genome.tsv
+
+  $ cat tmp/model/lambda.benchmark.sh | grep input=
+  input=/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv

@@ -107,12 +107,12 @@ def convert_fextract_row(input_d):
     3) Merge 'CCSToGenomeCigar' and 'CcsToGenomePrevDeletions', and report as one-hot encode
     """
     base_d = one_hot_base(input_d['CCSBase'])
-    # Input PrevBases has two bases, '{PrevBase1}{PrevBase0}'
+    # Input PrevBases has two bases, '{PrevBase0}{PrevBase1}'
     # Input NextBases has two bases, '{NextBase0}{NextBase1}'
-    # CCS read local sequence context: PrevBase1, PrevBase0, CCSBase, NextBase0, NextBase1
+    # CCS read local sequence context: PrevBase0, PrevBase1, CCSBase, NextBase0, NextBase1
     if 'PrevBases' in input_d:
-        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][1], "PrevBase0"))
-        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][0], "PrevBase1"))
+        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][0], "PrevBase0"))
+        base_d.update(one_hot_base_or_gap(input_d['PrevBases'][1], "PrevBase1"))
     if 'NextBases' in input_d:
         base_d.update(one_hot_base_or_gap(input_d['NextBases'][0], "NextBase0"))
         base_d.update(one_hot_base_or_gap(input_d['NextBases'][1], "NextBase1"))

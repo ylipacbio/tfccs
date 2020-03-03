@@ -361,8 +361,12 @@ class CcsQvConfig(object):
         return op.join(self.out_model_dir, 'train.sh')
 
     @property
-    def benchmark_script(self):
-        return op.join(self.out_model_dir, 'benchmark.sh')
+    def lambda_benchmark_script(self):
+        return op.join(self.out_model_dir, 'lambda.benchmark.sh')
+
+    @property
+    def hg2_benchmark_script(self):
+        return op.join(self.out_model_dir, 'hg2.benchmark.sh')
 
     @property
     def feature_stat_json(self):
@@ -395,6 +399,14 @@ class CcsQvConfig(object):
     @property
     def baseqv_csv(self):
         return op.join(self.out_model_dir, 'out.baseqv.csv')
+
+    @property
+    def lambda_benchmark_dir(self):
+        return op.join(self.out_benchmark_dir, "lambda")
+
+    @property
+    def hg2_benchmark_dir(self):
+        return op.join(self.out_benchmark_dir, "hg2")
 
     def create_prev_train_script(self):
         def gen_stat_cmd(in_fextract_csv, out_stat_json):
@@ -446,16 +458,27 @@ class CcsQvConfig(object):
         log.info(f"Written post_train script: {self.post_train_script}")
         return self.post_train_script
 
-    def create_benchmark_script(self):
+    def __create_benchmark_script(self, input_ccs2genome_tsv, out_benchmark_dir, benchmark_script):
+        mkdir(out_benchmark_dir)
         c0 = """. /mnt/software/Modules/current/init/bash
 module load ccsqv/master
-input=/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv
+input={input_ccs2genome_tsv}
 model={abs_model_dir}
 name={name}
-""".format(name=self.name, abs_model_dir=op.realpath(self.out_model_dir))
-        c1 = "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} " + op.realpath(self.out_benchmark_dir)
-        write_to_script([c0, c1], self.benchmark_script)
-        return self.benchmark_script
+""".format(input_ccs2genome_tsv=input_ccs2genome_tsv, name=self.name, abs_model_dir=op.realpath(self.out_model_dir))
+        c1 = "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} " + op.realpath(out_benchmark_dir)
+        write_to_script([c0, c1], benchmark_script)
+
+    def create_benchmark_script(self):
+        lambda_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv"
+        self.__create_benchmark_script(input_ccs2genome_tsv=lambda_ccs2genome_tsv,
+                                       out_benchmark_dir=self.lambda_benchmark_dir,
+                                       benchmark_script=self.lambda_benchmark_script)
+        hg2_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/hg2/one_percent.hg2.Grch38.ccs2genome.tsv"
+        self.__create_benchmark_script(input_ccs2genome_tsv=hg2_ccs2genome_tsv,
+                                       out_benchmark_dir=self.hg2_benchmark_dir,
+                                       benchmark_script=self.hg2_benchmark_script)
+        return [self.lambda_benchmark_script, self.hg2_benchmark_script]
 
     def train(self):
         from tfccs.train import train as train_func
@@ -497,8 +520,9 @@ def run(args):
     post_train_sh = config_obj.create_prost_train_script()
     execute(f'bash {post_train_sh}')
 
-    benchmark_sh = config_obj.create_benchmark_script()
-    log.info(f'To run benchmark:\n bash {benchmark_sh}\n')
+    benchmark_sh_files = config_obj.create_benchmark_script()
+    for benchmark_sh in benchmark_sh_files:
+        log.info(f'To run benchmark:\n bash {benchmark_sh_files}\n')
 
 
 def get_ccsqv_pipeline_parser():

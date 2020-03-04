@@ -19,7 +19,7 @@ Test2: qvpipe gen
   $ ls $OUT_JSON >/dev/null && echo $?
   0
 
-Test3: qvpipe run
+Test3: qvpipe run without validation
   $ qvpipe run $IN_JSON 1>$OUT_DIR/run.1.log 2>$OUT_DIR/run.2.log && echo $?
   0
   $ ls tmp/model/base_map_probability.json >/dev/null && echo $?
@@ -33,3 +33,14 @@ Test3: qvpipe run
 
   $ cat tmp/model/lambda.benchmark.sh | grep input=
   input=/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv
+
+Test4: qvpipe run with validation
+  $ IN_JSON=$DATADIR/qvpipe.wvalidation.json
+  $ qvpipe run $IN_JSON 1>$OUT_DIR/run.1.log 2>$OUT_DIR/run.2.log && echo $?
+  0
+  $ ls tmp/model/base_map_probability.json >/dev/null && echo $?
+  0
+  $ ls tmp/model/features.stat.json >/dev/null && echo $?
+  0
+  $ ls tmp/model/features.order.json >/dev/null && echo $?
+  0

@@ -1,7 +1,7 @@
   $ DATADIR=$TESTDIR/../data/fextract2numpy
   $ PYBIN=$TESTDIR/../../tfccs/
   $ IN=$DATADIR/input.fextract.csv
-  $ OUT_TRAIN=$CRAMTMP/output.train.npz
+  $ OUT=$CRAMTMP/output.npz
 
 Test1: fextract2numpy exists
   $ fextract2numpy --help  1>&2 >/dev/null && echo $?
@@ -10,7 +10,7 @@ Test1: fextract2numpy exists
 Test2: run a small data
   $ fextract2numpy ${IN} ${CRAMTMP}/output --num-train-rows 3 1>&2 >/dev/null && echo $?
   0
-  $ ls ${OUT_TRAIN} > /dev/null && echo $?
+  $ ls ${OUT} > /dev/null && echo $?
   0
 
 Test3: emit stat-json
@@ -23,7 +23,7 @@ Test3: emit stat-json
   $ ls ${OUT_PREFIX}.train.npz > /dev/null && echo $?
   0
 
-  $ python -c "from tfccs.utils import load_fextract_npz; print(load_fextract_npz(\"${OUT_PREFIX}.train.npz\")[0][0])"
+  $ python -c "from tfccs.utils import load_fextract_npz; print(load_fextract_npz(\"${OUT_PREFIX}.npz\")[0][0])"
   [ 0.9853782   0.8212768  -0.7974602  -0.38539958 -0.54102606 -0.3833715
     0.44156098  0.67862433  1.2597709   0.9615064   1.292812   -0.5629895
     0.82436967  0.30031347 -0.31018588 -0.40606946 -0.39460257 -0.62491006
@@ -45,7 +45,7 @@ Test3: emit stat-json
    -0.45327428 -0.4839034   1.0808077   0.94427305 -0.41641396 -0.47403482
    -0.43089172  0.          0.          1.          0.        ]
 
-  $ head -2 ${OUT_PREFIX}.train.fextract.csv
+  $ head -2 ${OUT_PREFIX}.fextract.csv
   Movie,HoleNumber,CCSBase,CCSPos,CCSLength,ArrowQv,CCSToGenomeStrand,CCSToGenomeCigar,IsCCSHP,CCSHPLength,CCSBaseSNR,MsaCoverage_FWD,MsaCoverage_REV,BaseCoverage_FWD,BaseCoverage_REV,SubreadHP0_FWD,SubreadHP0_REV,MeanSubreadHP0_FWD,MeanSubreadHP0_REV,MeanSubreadHP0,StdevSubreadHP0_FWD,StdevSubreadHP0_REV,StdevSubreadHP0,SeqMatch0_FWD,Insertion0_FWD,Deletion0_FWD,Substitution0_FWD,Unmapped0_FWD,SeqMatch0_REV,Insertion0_REV,Deletion0_REV,Substitution0_REV,Unmapped0_REV,SeqMatch1_FWD_PREV,Insertion1_FWD_PREV,Deletion1_FWD_PREV,Substitution1_FWD_PREV,Unmapped1_FWD_PREV,SeqMatch1_FWD_NEXT,Insertion1_FWD_NEXT,Deletion1_FWD_NEXT,Substitution1_FWD_NEXT,Unmapped1_FWD_NEXT,SeqMatch1_REV_PREV,Insertion1_REV_PREV,Deletion1_REV_PREV,Substitution1_REV_PREV,Unmapped1_REV_PREV,SeqMatch1_REV_NEXT,Insertion1_REV_NEXT,Deletion1_REV_NEXT,Substitution1_REV_NEXT,Unmapped1_REV_NEXT,SeqMatch3_FWD_PREV,Insertion3_FWD_PREV,Deletion3_FWD_PREV,Substitution3_FWD_PREV,Unmapped3_FWD_PREV,SeqMatch3_FWD_NEXT,Insertion3_FWD_NEXT,Deletion3_FWD_NEXT,Substitution3_FWD_NEXT,Unmapped3_FWD_NEXT,SeqMatch3_REV_PREV,Insertion3_REV_PREV,Deletion3_REV_PREV,Substitution3_REV_PREV,Unmapped3_REV_PREV,SeqMatch3_REV_NEXT,Insertion3_REV_NEXT,Deletion3_REV_NEXT,Substitution3_REV_NEXT,Unmapped3_REV_NEXT,SeqMatch6_FWD_PREV,Insertion6_FWD_PREV,Deletion6_FWD_PREV,Substitution6_FWD_PREV,Unmapped6_FWD_PREV,SeqMatch6_FWD_NEXT,Insertion6_FWD_NEXT,Deletion6_FWD_NEXT,Substitution6_FWD_NEXT,Unmapped6_FWD_NEXT,SeqMatch6_REV_PREV,Insertion6_REV_PREV,Deletion6_REV_PREV,Substitution6_REV_PREV,Unmapped6_REV_PREV,SeqMatch6_REV_NEXT,Insertion6_REV_NEXT,Deletion6_REV_NEXT,Substitution6_REV_NEXT,Unmapped6_REV_NEXT,SeqMatch10_FWD_PREV,Insertion10_FWD_PREV,Deletion10_FWD_PREV,Substitution10_FWD_PREV,Unmapped10_FWD_PREV,SeqMatch10_FWD_NEXT,Insertion10_FWD_NEXT,Deletion10_FWD_NEXT,Substitution10_FWD_NEXT,Unmapped10_FWD_NEXT,SeqMatch10_REV_PREV,Insertion10_REV_PREV,Deletion10_REV_PREV,Substitution10_REV_PREV,Unmapped10_REV_PREV,SeqMatch10_REV_NEXT,Insertion10_REV_NEXT,Deletion10_REV_NEXT,Substitution10_REV_NEXT,Unmapped10_REV_NEXT,PosInCcsHP,SNR_A,SNR_C,SNR_G,SNR_T,Subread_A_Count_FWD,Subread_A_Count_REV,Subread_C_Count_FWD,Subread_C_Count_REV,Subread_G_Count_FWD,Subread_G_Count_REV,Subread_T_Count_FWD,Subread_T_Count_REV,PrevCcsToGenomeCigar,NextCcsToGenomeCigar,CcsToGenomePrevDeletions
   m64002_190606_200346,458830,G,9483,19930,30,F,=,1,3,4.66223,2,3,2,2,2,2,3,2.33333,2.6,0,0.942809,0.8,2,0,0,0,0,2,0,0,0,1,2,0,0,0,0,2,0,0,0,0,2,0,0,0,1,2,0,0,0,1,3,0,0,1,0,4,0,0,0,0,4,0,0,0,2,4,2,0,0,2,5,0,1,0,0,4,0,2,0,0,6,3,0,0,3,6,0,0,0,3,8,0,0,0,0,8,0,0,0,0,8,0,0,0,4,8,0,0,0,4,0,13.7927,20.26,4.66223,8.44885,0,0,0,2,2,0,0,0,=,=,0
 
@@ -178,7 +178,7 @@ Test4: run a small data with Sequence Context: PrevBases and NextBases
   $ IN=$DATADIR/fextract2numpy/input.fextract.seqcontext.csv
   $ fextract2numpy ${IN} ${CRAMTMP}/output --num-train-rows 3 1>&2 >/dev/null && echo $?
   0
-  $ ls ${OUT_TRAIN} > /dev/null && echo $?
+  $ ls ${OUT} > /dev/null && echo $?
   0
   $ cat ${CRAMTMP}/output*features.order.json | grep "PrevBase" | sed 's/ //g'
   "PrevBase0A",

@@ -377,16 +377,24 @@ class CcsQvConfig(object):
         return op.join(self.out_model_dir, 'features.order.json')
 
     @property
-    def npz_prefix(self):
-        return op.join(self.out_model_dir, 'out')
+    def train_prefix(self):
+        return op.join(self.out_model_dir, 'out.train')
 
     @property
     def train_npz(self):
-        return self.npz_prefix + '.train.npz'
+        return self.train_prefix + '.npz'
+
+    @property
+    def validation_prefix(self):
+        return op.join(self.out_model_dir, 'out.validation')
+
+    @property
+    def validation_npz(self):
+        return self.validation_prefix + '.npz'
 
     @property
     def sampling_base_map_prob_json(self):
-        return self.npz_prefix + '.base_map_probability.json'
+        return op.join(self.out_model_dir, 'sampling.base_map_probability.json')
 
     @property
     def population_base_map_prob_json(self):
@@ -412,10 +420,15 @@ class CcsQvConfig(object):
         def gen_stat_cmd(in_fextract_csv, out_stat_json):
             return f'fextract2stat {in_fextract_csv} {out_stat_json} --min-dist2end {self.min_dist2end} --allowed-strands {self.allowed_strands} --allowed-cigars {self.allowed_cigars}'
 
-        def gen_npz_cmd(in_fextract_csv, in_stat_json, out_prefix, out_order_json, num_train_rows):
+        def gen_train_npz_cmd(in_fextract_csv, in_stat_json, out_prefix, out_order_json, num_train_rows):
             c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json} --num-train-rows {num_train_rows}'
             c1 = f'mv {out_prefix}.features.order.json {out_order_json}'
-            return c0 + '\n' + c1
+            c2 = f'mv {out_prefix}.base_map_probability.json {self.sampling_base_map_prob_json}'
+            return c0 + '\n' + c1 + '\n' + c2
+
+        def gen_validation_npz_cmd(in_fextract_csv, in_stat_json, out_prefix):
+            c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json}'
+            return c0
 
         def qvtools_cmd(ccs2genome_bam, out_baseqv_csv):
             forward_only = "--forward-only" if self.allowed_strands == "F" else ""
@@ -430,19 +443,23 @@ class CcsQvConfig(object):
 
         c0 = gen_stat_cmd(in_fextract_csv=self.in_fextract_csv,
                           out_stat_json=self.feature_stat_json)
-        c1 = gen_npz_cmd(in_fextract_csv=self.in_fextract_csv,
-                         in_stat_json=self.feature_stat_json,
-                         out_prefix=self.npz_prefix,
-                         out_order_json=self.feature_order_json,
-                         num_train_rows=self.param_config.num_train_rows)
-        c2 = qvtools_cmd(ccs2genome_bam=self.in_ccs2genome_bam,
+        c1 = gen_train_npz_cmd(in_fextract_csv=self.in_fextract_csv,
+                               in_stat_json=self.feature_stat_json,
+                               out_prefix=self.train_prefix,
+                               out_order_json=self.feature_order_json,
+                               num_train_rows=self.param_config.num_train_rows)
+        c2 = '' if not self.validation_fextract_csv else \
+            gen_validation_npz_cmd(in_fextract_csv=self.validation_fextract_csv,
+                                   in_stat_json=self.feature_stat_json,
+                                   out_prefix=self.validation_prefix)
+        c3 = qvtools_cmd(ccs2genome_bam=self.in_ccs2genome_bam,
                          out_baseqv_csv=self.baseqv_csv)
-        c3 = population_prob_cmd(in_baseqv_csv=self.baseqv_csv,
+        c4 = population_prob_cmd(in_baseqv_csv=self.baseqv_csv,
                                  out_population_base_map_prob_json=self.population_base_map_prob_json)
-        c4 = merge_base_map_prob_cmd(in_sampling_json=self.sampling_base_map_prob_json,
+        c5 = merge_base_map_prob_cmd(in_sampling_json=self.sampling_base_map_prob_json,
                                      in_population_json=self.population_base_map_prob_json,
                                      out_merged_json=self.base_map_prob_json)
-        write_to_script([c0, c1, c2, c3, c4], self.prev_train_script)
+        write_to_script([c0, c1, c2, c3, c4, c5], self.prev_train_script)
         log.info(f"Written prev_train script: {self.prev_train_script}")
         return self.prev_train_script
 
@@ -483,6 +500,9 @@ name={name}
     def train(self):
         from tfccs.train import train as train_func
         fextract_input, _, _, ccs2genome_cigars, _, _ = load_fextract_npz(self.train_npz)
+        x_val, y_val = None, None
+        if self.validation_npz and op.exists(self.validation_npz):
+            x_val, _, _, y_val, _, _ = load_fextract_npz(self.validation_npz)
 
         def create_and_compile_model_func(x_ncol, y_ncol):
             model = tf.keras.models.Sequential(self.param_config.keras_layers(
@@ -496,7 +516,8 @@ name={name}
                                 batch_size=self.param_config.batch_size,
                                 epochs=self.param_config.epochs,
                                 create_and_compile_model_func=create_and_compile_model_func,
-                                early_stop_callback=self.param_config.early_stop_callback_func())
+                                early_stop_callback=self.param_config.early_stop_callback_func(),
+                                x_val=x_val, y_val=y_val)
         return model, evl
 
 
@@ -521,8 +542,9 @@ def run(args):
     execute(f'bash {post_train_sh}')
 
     benchmark_sh_files = config_obj.create_benchmark_script()
+    log.info(f'To run benchmark on lambda and hg2')
     for benchmark_sh in benchmark_sh_files:
-        log.info(f'To run benchmark:\n bash {benchmark_sh_files}\n')
+        print(f'bash {benchmark_sh}')
 
 
 def get_ccsqv_pipeline_parser():

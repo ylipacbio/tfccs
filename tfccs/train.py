@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 import tensorflow as tf
 import sys
 import os
@@ -19,7 +20,7 @@ DEFAULT_EARLY_STOP_CALL_BACK = tf.keras.callbacks.EarlyStopping(monitor='accurac
 
 
 def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compile_model_func,
-          early_stop_callback=DEFAULT_EARLY_STOP_CALL_BACK):
+          early_stop_callback=DEFAULT_EARLY_STOP_CALL_BACK, x_val=None, y_val=None):
     """
     x_train - normalized standardized features
     y_train - outputs
@@ -47,10 +48,18 @@ def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compil
 
     # Create call backs
     cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
-    callbacks = [cp_callback, early_stop_callback] if early_stop_callback is not None else [cp_callback]
+    log_dir = op.join(out_dir, "logs/scalars" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
+    callbacks = [cp_callback, tensorboard_callback]
+    if early_stop_callback is not None:
+        callbacks.append(early_stop_callback)
 
-    # Fit
-    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=callbacks)
+    # Fit with/without validation set
+    if x_val is not None and y_val is not None:
+        model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=callbacks,
+                  validation_data=(x_val, y_val))
+    else:
+        model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, callbacks=callbacks)
 
     # Evaluate
     evl = model.evaluate(x_train, y_train)
@@ -66,8 +75,14 @@ def train_ccs2genome(args, create_and_compile_model_func):
     batch_size = args.batch_size
     epochs = args.epochs
     fextract_input, _, _, ccs2genome_cigars, _, _ = load_fextract_npz(in_npz)
-    train(fextract_input, ccs2genome_cigars, out_dir=out_dir, name=name, batch_size=batch_size,
-          epochs=epochs, create_and_compile_model_func=create_and_compile_model_func)
+    validation_npz = args.validation_npz
+    x_val, y_val = None, None
+    if validation_npz and op.exists(validation_npz):
+        x_val, _, _, y_val, _, _ = load_fextract_npz(validation_npz)
+    train(x_train=fextract_input, y_train=ccs2genome_cigars, out_dir=out_dir,
+          name=name, batch_size=batch_size, epochs=epochs,
+          create_and_compile_model_func=create_and_compile_model_func,
+          x_val=x_val, y_val=y_val)
 
 
 def get_train_parser():
@@ -81,6 +96,7 @@ def get_train_parser():
     p.add_argument("--batch-size", default=32, type=int, help="Batch size")
     p.add_argument("--epochs", default=500, type=int, help="Epochs")
     p.add_argument("--model-id", default=0, type=int, help="Model Id")
+    p.add_argument("--validation_npz", default=None, type=str, help="fextract standarized npz file for validation")
     return p
 
 

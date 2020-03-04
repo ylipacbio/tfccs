@@ -155,7 +155,7 @@ def fextract2numpy(fextract_filename, output_prefix,
     out_features = None
 
     t0 = datetime.datetime.now()
-    raw_train_writer = open(output_prefix + '.train.fextract.csv', 'w')
+    raw_train_writer = open(output_prefix + '.fextract.csv', 'w')
     raw_train_writer.write(header)
     for r, raw_r in zip(reader, raw_reader):
         is_good = is_good_fextract_row(r, min_dist2end, allowed_strands, allowed_ccs2genome_cigars)
@@ -214,7 +214,7 @@ def fextract2numpy(fextract_filename, output_prefix,
         npa = npat.T  # npa 2d array, row: CCS bases, column: out_features
 
     # Write output header as txt
-    out_header_filename = output_prefix + ".train.header"
+    out_header_filename = output_prefix + ".header"
     with open(out_header_filename, 'w') as writer:
         writer.write(','.join(out_features))
 
@@ -232,7 +232,7 @@ def fextract2numpy(fextract_filename, output_prefix,
                             arrowqvbin8=arrow_qv_bins[start_row:end_row],
                             ccs2genome_cigars=ccs2genome_cigars[start_row:end_row])
 
-    out_train_filename = output_prefix + ".train.npz"
+    out_train_filename = output_prefix + ".npz"
     zipsave(out_train_filename, 0, num_train_rows)
     t3 = datetime.datetime.now()
     print("Dumped {} rows of training data, time={}".format(num_train_rows, t3-t2))
@@ -276,7 +276,7 @@ def run(args):
 
 def get_parser():
     """Set up and return argument parser."""
-    desc = """Convert fextract csv file to zipped numpy file - ${output_prefix}.train.npz with N rows\n"""
+    desc = """Convert fextract csv file to zipped numpy file - ${output_prefix}.npz with N rows\n"""
     p = argparse.ArgumentParser(desc)
     p.add_argument("fextract_filename", help="fextract csv file")
     p.add_argument("output_prefix", help="Output prefix")

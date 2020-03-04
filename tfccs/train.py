@@ -47,8 +47,9 @@ def train(x_train, y_train, out_dir, name, batch_size, epochs, create_and_compil
     tf.keras.utils.plot_model(model, to_file=model_png)
 
     # Create call backs
-    cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=out_dir, verbose=1)
-    log_dir = op.join(out_dir, "logs/scalars" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+    cp_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath=out_dir, verbose=1, save_best_only=True, monitor='val_accuracy')
+    log_dir = op.join(out_dir, "logs/scalars/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     callbacks = [cp_callback, tensorboard_callback]
     if early_stop_callback is not None:

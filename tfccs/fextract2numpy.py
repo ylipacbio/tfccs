@@ -128,8 +128,8 @@ def convert_fextract_row(input_d):
 
 def fextract2numpy(fextract_filename, output_prefix,
                    min_dist2end, allowed_strands,
-                   allowed_ccs2genome_cigars, num_train_rows,
-                   stat_json):
+                   allowed_ccs2genome_cigars, min_np, max_np,
+                   num_train_rows, stat_json):
     if num_train_rows == 0:
         log.info("Will convert all qualified rows to output npz!")
 
@@ -158,7 +158,10 @@ def fextract2numpy(fextract_filename, output_prefix,
     raw_train_writer = open(output_prefix + '.fextract.csv', 'w')
     raw_train_writer.write(header)
     for r, raw_r in zip(reader, raw_reader):
-        is_good = is_good_fextract_row(r, min_dist2end, allowed_strands, allowed_ccs2genome_cigars)
+        is_good = is_good_fextract_row(r, min_dist2end=min_dist2end,
+                                       allowed_strands=allowed_strands,
+                                       allowed_ccs2genome_cigars=allowed_ccs2genome_cigars,
+                                       min_np=min_np, max_np=max_np)
         if not is_good:
             continue
         out_r, arrow_qv, ccs2genome_cigar = convert_fextract_row(r)
@@ -270,7 +273,7 @@ def run(args):
     fextract2numpy(fextract_filename=args.fextract_filename, output_prefix=args.output_prefix,
                    num_train_rows=args.num_train_rows, min_dist2end=args.min_dist2end,
                    allowed_strands=args.allowed_strands, allowed_ccs2genome_cigars=args.allowed_cigars,
-                   stat_json=args.stat_json)
+                   min_np=args.min_np, max_np=args.max_np, stat_json=args.stat_json)
     return 0
 
 

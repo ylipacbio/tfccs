@@ -7,7 +7,8 @@ import json
 import argparse
 import logging
 from tfccs.utils import execute, write_to_script, load_fextract_npz, mkdir, add_filter_args
-from tfccs.constants import MIN_DIST2END, ALLOWED_STRANDS, ALLOWED_CIGARS
+from tfccs.constants import (MIN_DIST2END, ALLOWED_STRANDS, ALLOWED_CIGARS, DEFAULT_VALIDATION_CSV,
+                             MIN_NUMPASSES, MAX_NUMPASSES, HG2_GRC38_HIGHCONFIDENCE_NOINCONSISTENT, HG2_GRC38_KNOWN_VARIANTS)
 
 FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
@@ -241,7 +242,8 @@ def generate_config_json(args):
                                early_stop_patience=default_early_stop_patience, layers=default_layers,
                                num_train_rows=default_num_train_rows, optimizer=default_optimizer)
     config_obj = CcsQvConfig(name=name, in_fextract_csv="FIXME", in_ccs2genome_bam="FIXME", out_model_dir="FIXME",
-                             out_benchmark_dir="FIXME", param_config=param_config, validation_fextract_csv="FIXME",
+                             out_benchmark_dir="FIXME", param_config=param_config,
+                             validation_fextract_csv=DEFAULT_VALIDATION_CSV,
                              min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
                              allowed_cigars=args.allowed_cigars)
     config_obj.save_json(out_json)
@@ -252,7 +254,9 @@ class CcsQvConfig(object):
     def __init__(self, name, in_fextract_csv, in_ccs2genome_bam,
                  param_config, out_model_dir, out_benchmark_dir,
                  validation_fextract_csv=None, min_dist2end=MIN_DIST2END,
-                 allowed_strands=ALLOWED_STRANDS, allowed_cigars=ALLOWED_CIGARS):
+                 allowed_strands=ALLOWED_STRANDS, allowed_cigars=ALLOWED_CIGARS,
+                 min_np=MIN_NUMPASSES, max_np=MAX_NUMPASSES,
+                 white_mask=None, known_variants=None, variant_flank_size=20):
         self.name = name
         self.in_fextract_csv = in_fextract_csv
         self.in_ccs2genome_bam = in_ccs2genome_bam
@@ -263,6 +267,11 @@ class CcsQvConfig(object):
         self.min_dist2end = int(min_dist2end)
         self.allowed_strands = allowed_strands
         self.allowed_cigars = allowed_cigars
+        self.min_np = int(min_np)
+        self.max_np = int(max_np)
+        self.white_mask = white_mask
+        self.known_variants = known_variants
+        self.variant_flank_size = variant_flank_size
 
     def mkdir(self):
         mkdir(self.out_model_dir)
@@ -311,14 +320,29 @@ class CcsQvConfig(object):
         min_dist2end = MIN_DIST2END
         allowed_strands = ALLOWED_STRANDS
         allowed_cigars = ALLOWED_CIGARS
+        min_np = MIN_NUMPASSES
+        max_np = MAX_NUMPASSES
+        white_mask = None  # HG2_GRC38_HIGHCONFIDENCE_NOINCONSISTENT
+        known_variants = None  # HG2_GRC38_KNOWN_VARIANTS
+        variant_flank_size = 20
         if 'SAMPLING' in d:
             sampling_config = d['SAMPLING']
             if 'MIN_DIST2END' in sampling_config:
-                min_dist2end = sampling_config['MIN_DIST2END']
+                min_dist2end = int(sampling_config['MIN_DIST2END'])
             if 'ALLOWED_STRANDS' in sampling_config:
                 allowed_strands = sampling_config['ALLOWED_STRANDS']
             if 'ALLOWED_CIGARS' in sampling_config:
                 allowed_cigars = sampling_config['ALLOWED_CIGARS']
+            if 'MIN_NUMPASSES' in sampling_config:
+                min_np = int(sampling_config['MIN_NUMPASSES'])
+            if 'MAX_NUMPASSES' in sampling_config:
+                max_np = int(sampling_config['MAX_NUMPASSES'])
+            if 'WHITE_MASK' in sampling_config:
+                white_mask = sampling_config['WHITE_MASK']
+            if 'KNOWN_VARIANTS' in sampling_config:
+                known_variants = sampling_config['KNOWN_VARIANTS']
+            if 'VARIANT_FLANK_SIZE' in sampling_config:
+                variant_flank_size = sampling_config['VARIANT_FLANK_SIZE']
         return CcsQvConfig(name=name, in_fextract_csv=in_fextract_csv,
                            in_ccs2genome_bam=in_ccs2genome_bam,
                            param_config=param_config,
@@ -327,7 +351,12 @@ class CcsQvConfig(object):
                            validation_fextract_csv=validation_fextract_csv,
                            min_dist2end=min_dist2end,
                            allowed_strands=allowed_strands,
-                           allowed_cigars=allowed_cigars)
+                           allowed_cigars=allowed_cigars,
+                           min_np=min_np,
+                           max_np=max_np,
+                           white_mask=white_mask,
+                           known_variants=known_variants,
+                           variant_flank_size=variant_flank_size)
 
     def to_dict(self):
         d = {
@@ -340,7 +369,12 @@ class CcsQvConfig(object):
             d["ValidationData"] = {"FextractCsv": f"{self.validation_fextract_csv}"}
         sampling_config = {'MIN_DIST2END': self.min_dist2end,
                            'ALLOWED_STRANDS': self.allowed_strands,
-                           'ALLOWED_CIGARS': self.allowed_cigars}
+                           'ALLOWED_CIGARS': self.allowed_cigars,
+                           'MIN_NUMPASSES': self.min_np,
+                           'MAX_NUMPASSES': self.max_np,
+                           'WHITE_MASK': self.white_mask,
+                           'KNOWN_VARIANTS': self.known_variants,
+                           'VARIANT_FLANK_SIZE': self.variant_flank_size}
         d['SAMPLING'] = sampling_config
         return d
 
@@ -417,22 +451,33 @@ class CcsQvConfig(object):
         return op.join(self.out_benchmark_dir, "hg2")
 
     def create_prev_train_script(self):
+        fextract_filter_argstr = f'--min-dist2end {self.min_dist2end} --allowed-strands {self.allowed_strands} --allowed-cigars {self.allowed_cigars} --min-np {self.min_np} --max-np {self.max_np}'
+
         def gen_stat_cmd(in_fextract_csv, out_stat_json):
-            return f'fextract2stat {in_fextract_csv} {out_stat_json} --min-dist2end {self.min_dist2end} --allowed-strands {self.allowed_strands} --allowed-cigars {self.allowed_cigars}'
+            return f'fextract2stat {in_fextract_csv} {out_stat_json} {fextract_filter_argstr}'
 
         def gen_train_npz_cmd(in_fextract_csv, in_stat_json, out_prefix, out_order_json, num_train_rows):
-            c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json} --num-train-rows {num_train_rows}'
+            c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json} --num-train-rows {num_train_rows} {fextract_filter_argstr}'
             c1 = f'mv {out_prefix}.features.order.json {out_order_json}'
             c2 = f'mv {out_prefix}.base_map_probability.json {self.sampling_base_map_prob_json}'
             return c0 + '\n' + c1 + '\n' + c2
 
         def gen_validation_npz_cmd(in_fextract_csv, in_stat_json, out_prefix):
-            c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json}'
+            c0 = f'fextract2numpy {in_fextract_csv} {out_prefix} --stat-json {in_stat_json} {fextract_filter_argstr}'
             return c0
 
-        def qvtools_cmd(ccs2genome_bam, out_baseqv_csv):
+        def qvtools_cmd(ccs2genome_bam, out_baseqv_csv, white_mask=None, known_variants=None, variant_flank_size=20):
             forward_only = "--forward-only" if self.allowed_strands == "F" else ""
-            return f'qvtools {ccs2genome_bam} {out_baseqv_csv} -j {NPROC} {forward_only}'
+            c0 = f'qvtools {ccs2genome_bam} {out_baseqv_csv} -j {NPROC} {forward_only} --min-num-passes {self.min_np} --max-num-passes {self.max_np}'
+            if white_mask:
+                if not op.exists(white_mask):
+                    raise IOError(f"White mask file {white_mask} does not exist!")
+                c0 += f' --white-mask {white_mask}'
+            if known_variants:
+                if not op.exists(known_variants):
+                    raise IOError(f"Known variant file {known_variants} does not exist!")
+                c0 += f' --variants {known_variants} --variant-flank-size {variant_flank_size}'
+            return c0
 
         def population_prob_cmd(in_baseqv_csv, out_population_base_map_prob_json):
             rscript_path = '/mnt/software/c/ccsqv/master/bin/R/base_map_prob_json_from_baseqv_csv.R'
@@ -453,7 +498,9 @@ class CcsQvConfig(object):
                                    in_stat_json=self.feature_stat_json,
                                    out_prefix=self.validation_prefix)
         c3 = qvtools_cmd(ccs2genome_bam=self.in_ccs2genome_bam,
-                         out_baseqv_csv=self.baseqv_csv)
+                         out_baseqv_csv=self.baseqv_csv,
+                         white_mask=self.white_mask,
+                         known_variants=self.known_variants)
         c4 = population_prob_cmd(in_baseqv_csv=self.baseqv_csv,
                                  out_population_base_map_prob_json=self.population_base_map_prob_json)
         c5 = merge_base_map_prob_cmd(in_sampling_json=self.sampling_base_map_prob_json,
@@ -483,7 +530,8 @@ input={input_ccs2genome_tsv}
 model={abs_model_dir}
 name={name}
 """.format(input_ccs2genome_tsv=input_ccs2genome_tsv, name=self.name, abs_model_dir=op.realpath(self.out_model_dir))
-        c1 = "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} " + op.realpath(out_benchmark_dir)
+        c1 = f"MIN_NUMPASSES={self.min_np} MAX_NUMPASSES={self.max_np} " + \
+            "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} " + op.realpath(out_benchmark_dir)
         write_to_script([c0, c1], benchmark_script)
 
     def create_benchmark_script(self):

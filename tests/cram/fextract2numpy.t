@@ -20,7 +20,7 @@ Test3: emit stat-json
   $ fextract2numpy ${IN} ${OUT_PREFIX} --stat-json ${STAT_JSON} --num-train-rows 5 1>&2 >/dev/null && echo $?
   0
 
-  $ ls ${OUT_PREFIX}.train.npz > /dev/null && echo $?
+  $ ls ${OUT_PREFIX}.npz > /dev/null && echo $?
   0
 
   $ python -c "from tfccs.utils import load_fextract_npz; print(load_fextract_npz(\"${OUT_PREFIX}.npz\")[0][0])"

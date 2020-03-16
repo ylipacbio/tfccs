@@ -5,7 +5,8 @@ import csv
 import os.path as op
 import logging
 import subprocess
-from tfccs.constants import BASE_FEATURE_STAT_KEY, MIN_DIST2END, ALLOWED_STRANDS, ALLOWED_CIGARS
+from tfccs.constants import (BASE_FEATURE_STAT_KEY, MIN_DIST2END, ALLOWED_STRANDS,
+                             ALLOWED_CIGARS, MIN_NUMPASSES, MAX_NUMPASSES)
 
 FORMATTER = op.basename(__file__) + ':%(levelname)s:'+'%(message)s'
 logging.basicConfig(level=logging.DEBUG, format=FORMATTER)
@@ -33,8 +34,8 @@ def load_fextract_npz(npz_filename):
 
 
 def is_good_fextract_row(in_d, min_dist2end=MIN_DIST2END, allowed_strands=ALLOWED_STRANDS,
-                         allowed_ccs2genome_cigars=ALLOWED_CIGARS,
-                         require_previous_is_deletion=False):
+                         allowed_ccs2genome_cigars=ALLOWED_CIGARS, min_np=MIN_NUMPASSES,
+                         max_np=MAX_NUMPASSES):
     """
     Return False if fextract row's
     1) ccs base is within 100bp end of CCS read
@@ -48,8 +49,13 @@ def is_good_fextract_row(in_d, min_dist2end=MIN_DIST2END, allowed_strands=ALLOWE
         return False
     if 'CCSToGenomeStrand' in in_d and in_d["CCSToGenomeStrand"] not in allowed_strands:
         return False
-    if require_previous_is_deletion:
-        return int(in_d['CcsToGenomePrevDeletions']) > 0
+    np = None
+    if 'BaseCoverage' in in_d:
+        np = int(in_d['BaseCoverage'])
+    if 'BaseCoverage_FWD' in in_d and 'BaseCoverage_REV' in in_d:
+        np = int(in_d['BaseCoverage_FWD']) + int(in_d['BaseCoverage_REV'])
+    if np and (np < min_np or np > max_np):
+        return False
     return True
 
 
@@ -157,6 +163,10 @@ def add_filter_args(p):
                          "F - forward strand, R - reverse strand, FR - both strands"))
     p.add_argument("--allowed-cigars", default=ALLOWED_CIGARS,
                    help="Ignore a base if it maps to genome with a not-allowed cigar")
+    p.add_argument("--min-np", default=MIN_NUMPASSES, type=int,
+                   help="Ignore a base if its NumPasses (BaseCoverage) is less than min-np")
+    p.add_argument("--max-np", default=MAX_NUMPASSES, type=int,
+                   help="Ignore a base if its NumPasses (BaseCoverage) is greater than min-np")
     return p
 
 

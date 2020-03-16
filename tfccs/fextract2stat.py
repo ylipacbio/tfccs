@@ -15,7 +15,8 @@ from tfccs.constants import NO_TRAIN_FEATURES, BASE_FEATURE_STAT_KEY
 from tfccs.utils import is_good_fextract_row, add_filter_args
 
 
-def compute_feature_stats(in_csv, out_stat_json, min_dist2end, allowed_strands, allowed_ccs2genome_cigars):
+def compute_feature_stats(in_csv, out_stat_json, min_dist2end, allowed_strands,
+                          allowed_ccs2genome_cigars, min_np, max_np):
     reader = csv.DictReader(open(in_csv, 'r'), delimiter=',')
     dataset = []
     t0 = datetime.datetime.now()
@@ -23,7 +24,8 @@ def compute_feature_stats(in_csv, out_stat_json, min_dist2end, allowed_strands, 
     for idx, r in enumerate(reader):
         is_good = is_good_fextract_row(r, min_dist2end=min_dist2end,
                                        allowed_strands=allowed_strands,
-                                       allowed_ccs2genome_cigars=allowed_ccs2genome_cigars)
+                                       allowed_ccs2genome_cigars=allowed_ccs2genome_cigars,
+                                       min_np=min_np, max_np=max_np)
         if not is_good:
             continue
         values = [r[feature] for feature in features]
@@ -71,7 +73,8 @@ def run(args):
         raise ValueError("Output stat json file must ends with .stat.json! {}".format(args.out_stat_json))
     compute_feature_stats(in_csv=args.in_csv, out_stat_json=args.out_stat_json,
                           min_dist2end=args.min_dist2end, allowed_strands=args.allowed_strands,
-                          allowed_ccs2genome_cigars=args.allowed_cigars)
+                          allowed_ccs2genome_cigars=args.allowed_cigars,
+                          min_np=args.min_np, max_np=args.max_np)
     return 0
 
 

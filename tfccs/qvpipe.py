@@ -403,6 +403,10 @@ class CcsQvConfig(object):
         return op.join(self.out_model_dir, 'hg2.benchmark.sh')
 
     @property
+    def ecoli_benchmark_script(self):
+        return op.join(self.out_model_dir, 'ecoli.benchmark.sh')
+
+    @property
     def feature_stat_json(self):
         return op.join(self.out_model_dir, 'features.stat.json')
 
@@ -449,6 +453,10 @@ class CcsQvConfig(object):
     @property
     def hg2_benchmark_dir(self):
         return op.join(self.out_benchmark_dir, "hg2")
+
+    @property
+    def ecoli_benchmark_dir(self):
+        return op.join(self.out_benchmark_dir, "ecoli")
 
     def create_prev_train_script(self):
         fextract_filter_argstr = f'--min-dist2end {self.min_dist2end} --allowed-strands {self.allowed_strands} --allowed-cigars {self.allowed_cigars} --min-np {self.min_np} --max-np {self.max_np}'
@@ -529,21 +537,33 @@ module load ccsqv/master
 input={input_ccs2genome_tsv}
 model={abs_model_dir}
 name={name}
-""".format(input_ccs2genome_tsv=input_ccs2genome_tsv, name=self.name, abs_model_dir=op.realpath(self.out_model_dir))
+benchmark_dir={abs_benchmark_dir}
+""".format(input_ccs2genome_tsv=input_ccs2genome_tsv, name=self.name, abs_model_dir=op.realpath(self.out_model_dir), abs_benchmark_dir=op.realpath(out_benchmark_dir))
         c1 = f"MIN_NUMPASSES={self.min_np} MAX_NUMPASSES={self.max_np} " + \
-            "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} " + op.realpath(out_benchmark_dir)
+            "bash cromwell-ccsqv-apply.sh ${input} ${model} ${name} ${benchmark_dir}"
         write_to_script([c0, c1], benchmark_script)
 
     def create_benchmark_script(self):
+        # Replace ccs 4.0.0 file by ccs 4.2.0 file
+        # - 4.0.0: "/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv"
+        # - 4.2.0: "/pbi/dept/consensus/ccsqv/data/Mule/lambda/ccs420/one_percent.lambda.arrowqv.ccs2genome.tsv"
         lambda_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/lambda/one_percent.lambda.arrowqv.ccs2genome.tsv"
         self.__create_benchmark_script(input_ccs2genome_tsv=lambda_ccs2genome_tsv,
                                        out_benchmark_dir=self.lambda_benchmark_dir,
                                        benchmark_script=self.lambda_benchmark_script)
-        hg2_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/hg2/one_percent.hg2.Grch38.ccs2genome.tsv"
+        # Replace ccs 4.0.0 file by ccs 4.2.0 file
+        # - 4.0.0: "/pbi/dept/consensus/ccsqv/data/Mule/hg2/one_percent.hg2.Grch38.ccs2genome.tsv"
+        # - 4.2.0: "/pbi/dept/consensus/ccsqv/data/Mule/hg2/ccs420/one_percent.hg2.Grch38.ccs2genome.tsv"
+        hg2_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/hg2/ccs420/one_percent.hg2.Grch38.ccs2genome.tsv"
         self.__create_benchmark_script(input_ccs2genome_tsv=hg2_ccs2genome_tsv,
                                        out_benchmark_dir=self.hg2_benchmark_dir,
                                        benchmark_script=self.hg2_benchmark_script)
-        return [self.lambda_benchmark_script, self.hg2_benchmark_script]
+        # - ccs 4.2.0
+        ecoli_ccs2genome_tsv = "/pbi/dept/consensus/ccsqv/data/Mule/ecoli/ccs420/one_percent.ecoli.ecoliK12_pbi_November2019.ccs2genome.tsv"
+        self.__create_benchmark_script(input_ccs2genome_tsv=ecoli_ccs2genome_tsv,
+                                       out_benchmark_dir=self.ecoli_benchmark_dir,
+                                       benchmark_script=self.ecoli_benchmark_script)
+        return [self.lambda_benchmark_script, self.hg2_benchmark_script, self.ecoli_benchmark_script]
 
     def train(self):
         from tfccs.train import train as train_func
